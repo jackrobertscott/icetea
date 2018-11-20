@@ -2,7 +2,9 @@
 
 > 🏰 Improved logic management for React apps.
 
-Once upon a time, a small company called Facebook created a front-end library to help in the development of application views.
+Once upon a time, a small company called Facebook created a front-end library to help in the development of application views. Since then, the world took the liberty of moving everything into components. I say no sir. No sir!
+
+This library is here to try a new approach to front-end app development.
 
 ## Classes
 
