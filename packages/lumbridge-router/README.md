@@ -1,4 +1,4 @@
-# lumbridge
+# lumbridge-router
 
 > 🏰 Improved route management for React apps.
 

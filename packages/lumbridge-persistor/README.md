@@ -1,4 +1,4 @@
-# lumbridge
+# lumbridge-persistor
 
 > 🏰 Improved persistant data management for React apps.
 

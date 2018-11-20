@@ -1,4 +1,4 @@
-# lumbridge
+# lumbridge-store
 
 > 🏰 Improved global data management for React apps.
 

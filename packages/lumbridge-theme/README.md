@@ -1,4 +1,4 @@
-# lumbridge
+# lumbridge-theme
 
 > 🏰 Improved theme management for React apps.
 
