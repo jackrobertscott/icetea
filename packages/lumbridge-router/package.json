@@ -1,11 +1,20 @@
 {
   "name": "lumbridge-router",
   "version": "0.0.1",
+  "private": false,
   "description": "Helpful classes which boost front-end app development.",
-  "main": "index.js",
   "author": "Jack Scott",
   "license": "MIT",
-  "private": false,
+  "main": "lib/index.js",
+  "files": [
+    "lib",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "yarn run clean && yarn run compile",
+    "clean": "rm -rf lib",
+    "compile": "tsc"
+  },
   "devDependencies": {
     "typescript": "^3.1.6"
   }

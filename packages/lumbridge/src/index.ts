@@ -1,5 +1,5 @@
-let frog: number;
+let toad: number;
 
-frog = 10;
+toad = 10;
 
-console.log(frog);
+console.log(toad);
