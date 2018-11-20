@@ -4,3 +4,8 @@ npm-debug.log
 
 # lerna
 lerna-debug.log
+
+# build
+lib
+dist
+build
