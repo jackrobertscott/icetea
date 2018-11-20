@@ -1,0 +1,9 @@
+{
+  "name": "lumbridge-store",
+  "version": "0.0.1",
+  "description": "Helpful classes which boost front-end app development.",
+  "main": "index.js",
+  "author": "Jack Scott",
+  "license": "MIT",
+  "private": false
+}
