@@ -1,6 +1,6 @@
 # lumbridge
 
-Improved logic management for React apps.
+> 🏰 Improved persistant data management for React apps.
 
 ## Installation
 
@@ -145,3 +145,11 @@ const MyProfile = () => {
   );
 };
 ```
+
+## Packages
+
+- [lubridge](https://github.com/jackrobertscott/lumbridge/tree/master/packages/lumbridge)
+- [lubridge-persistor](https://github.com/jackrobertscott/lumbridge/tree/master/packages/lumbridge-persistor)
+- [lubridge-router](https://github.com/jackrobertscott/lumbridge/tree/master/packages/lumbridge-router)
+- [lubridge-store](https://github.com/jackrobertscott/lumbridge/tree/master/packages/lumbridge-store)
+- [lubridge-theme](https://github.com/jackrobertscott/lumbridge/tree/master/packages/lumbridge-theme)
