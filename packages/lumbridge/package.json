@@ -2,7 +2,7 @@
   "name": "lumbridge",
   "version": "0.0.1",
   "private": false,
-  "description": "Helpful classes which boost front-end app development.",
+  "description": "Improved logic management for React apps.",
   "author": "Jack Scott",
   "license": "MIT",
   "main": "lib/index.js",
