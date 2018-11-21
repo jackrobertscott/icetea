@@ -99,8 +99,8 @@ const App = () => (
 
 ## Packages
 
-- [lubridge](https://github.com/jackrobertscott/lumbridge/tree/master/packages/lumbridge)
-- [lubridge-persistor](https://github.com/jackrobertscott/lumbridge/tree/master/packages/lumbridge-persistor)
-- [lubridge-router](https://github.com/jackrobertscott/lumbridge/tree/master/packages/lumbridge-router)
-- [lubridge-store](https://github.com/jackrobertscott/lumbridge/tree/master/packages/lumbridge-store)
-- [lubridge-theme](https://github.com/jackrobertscott/lumbridge/tree/master/packages/lumbridge-theme)
+- [lumbridge](https://github.com/jackrobertscott/lumbridge/tree/master/packages/lumbridge)
+- [lumbridge-persistor](https://github.com/jackrobertscott/lumbridge/tree/master/packages/lumbridge-persistor)
+- [lumbridge-router](https://github.com/jackrobertscott/lumbridge/tree/master/packages/lumbridge-router)
+- [lumbridge-store](https://github.com/jackrobertscott/lumbridge/tree/master/packages/lumbridge-store)
+- [lumbridge-theme](https://github.com/jackrobertscott/lumbridge/tree/master/packages/lumbridge-theme)
