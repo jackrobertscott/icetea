@@ -75,16 +75,16 @@ const authRouter = Router.create({
 });
 ```
 
-...More considerations:
-
 - The routes can be easily inserted into a regular app component.
 - Nesting components are not supported on purpose. Instead, we encourage you to make multiple router instances and nest them in your normal components.
 
 ```js
-const ExampleComponent = () => (
-  <Wrap>
+import authRouter from '../routers/authRouter';
+
+const App = () => (
+  <Dashboard>
     <authRouter.Routes />
-  </Wrap>
+  </Dashboard>
 );
 ```
 
