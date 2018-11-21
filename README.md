@@ -1,14 +1,39 @@
 # Lumbridge
 
-> 🏰 Improved logic management for React apps.
+> 🏰 Focused & simple helper objects which improve React application structure and composability.
 
-Once upon a time, a small company called Facebook created a front-end library to help in the development of application views. Since then, the world took the liberty of moving everything into components. I say no sir. No sir!
+## Main Features
 
-This library is here to try a new approach to front-end app development.
+- `Router`: Easy to use route guards, enter and leave hooks, simplified route structure to improve maintainability.
+- `Store`: Quick to setup, modular and scalable local state management.
+- `Persistor`: Keep your application data syncronized easily.
+- `Theme`: Functional styles which act like lego when building components.
 
-## Classes
+## Usage
 
-The following classes provide functionality to front-end code development that are designed to work with React out of the box.
+Using [npm](https://www.npmjs.com/package/lumbridge):
+
+```shell
+npm i --save lumbridge
+```
+
+Using yarn
+
+```shell
+yarn add lumbridge
+```
+
+Import into a your react app like normal.
+
+```js
+import { Store } from 'lumbridge';
+
+const authStore = Store.create({
+  // code...
+});
+```
+
+**Note:** the components will usually be created in their own files (e.g. `src/stores/authStore.js`) which can then be imported into a React component file.
 
 ### Example Router
 
