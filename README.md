@@ -39,10 +39,13 @@ const authStore = Store.create({
 
 ### Router
 
-Thoughts used in design:
+Considerations in design:
 
-- Route `enter` and `leave` methods used to protect data improve authentication.
-- Easily listen to route changes with the `change` property.
+- Routing into a component can be aborted by checking data on a routes `enter` method.
+- Prevent a user from routing away from a component (such as when a form has not been saved) with a route's `leave` method.
+- Record and monitor all changes in the route location with the `change` method.
+- Routes are smartly prioritised by showing only the route which was found be the closest to real path.
+- Each route has a key which you can use to generate a link which you may route to.
 
 ```js
 import { Router } from 'lumbridge';
@@ -65,8 +68,24 @@ const authRouter = Router.create({
       path: ({ match }) => `${match}/sign-up`,
       component: SignUpPage,
     },
-  }
+  },
+  change: ({ match: { path } }) => {
+    recordRouteForAnalytics(path);
+  },
 });
+```
+
+...More considerations:
+
+- The routes can be easily inserted into a regular app component.
+- Nesting components are not supported on purpose. Instead, we encourage you to make multiple router instances and nest them in your normal components.
+
+```js
+const ExampleComponent = () => (
+  <Wrap>
+    <authRouter.Routes />
+  </Wrap>
+);
 ```
 
 ## Packages
