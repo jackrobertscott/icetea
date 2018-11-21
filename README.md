@@ -35,53 +35,37 @@ const authStore = Store.create({
 
 **Note:** the components will usually be created in their own files (e.g. `src/stores/authStore.js`) which can then be imported into a React component file.
 
-### Example Router
+## API
 
-```js
-const authRouter = new Router({
-  change: ({ location }) => console.log(location),
-  routes: {
-    home: {
-      exact: true,
-      path: ({ match }) => `${match}/`,
-      component: HomePage,
-    },
-    login: {
-      path: ({ match }) => `${match}/login`,
-      component: LoginForm,
-      enter: () => someStateAccess.usersIsNotSignedIn,
-      leave: () => saveTheDataBeforeRouting(),
-    },
-    logout: {
-      alias: ['hello', 'yellow'],
-      path: ({ match }) => `${match}/login`,
-      component: LoginForm,
-    },
-  }
-});
-```
+### Router
 
-## Installation
+Thoughts used in design:
 
-Using npm:
-
-```shell
-npm i --save lumbridge
-```
-
-Using yarn:
-
-```shell
-yarn add lumbridge
-```
-
-Then import the helper classes where needed.
+- Route `enter` and `leave` methods used to protect data improve authentication.
+- Easily listen to route changes with the `change` property.
 
 ```js
 import { Router } from 'lumbridge';
+import { HomePage, LoginPage, SignUpPage } from '../components/pages';
 
-const router = Router.create({
-  // code...
+const authRouter = Router.create({
+  routes: {
+    home: {
+      path: ({ match: { path } }) => `${path}/`,
+      component: HomePage,
+    },
+    login: {
+      path: ({ match: { path } }) => `${path}/login`,
+      component: LoginForm,
+      enter: () => userIsNotLoggedIn(),
+      leave: () => saveDataBeforeLeaving(),
+    },
+    logout: {
+      alias: ['hello', 'yellow'],
+      path: ({ match }) => `${match}/sign-up`,
+      component: SignUpPage,
+    },
+  }
 });
 ```
 
