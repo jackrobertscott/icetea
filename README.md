@@ -47,6 +47,7 @@ Considerations in design:
 - Prevent a user from routing away from a component (such as when a form has not been saved) with a route's `leave` method.
 - Record and monitor all changes in the route location with the `change` method.
 - Routes are smartly prioritised by showing only the route which was found be the closest to real path.
+- Exact match routes are checked first and will have priority over non-exact routes.
 - Each route has a key which you can use to generate a link which you may route to.
 
 ```js
@@ -59,23 +60,33 @@ import { HomePage, LoginPage, SignUpPage } from '../components/pages';
 const authRouter = Router.create({
   routes: {
     home: {
+      exact: true,
       path: ({ match: { path } }) => `${path}/`,
       component: HomePage,
     },
     login: {
       path: ({ match: { path } }) => `${path}/login`,
       component: LoginForm,
-      enter: () => userIsNotLoggedIn(),
-      leave: () => saveDataBeforeLeaving(),
+      enter: {
+        before: () => userIsNotLoggedIn(),
+      },
+      leave: {
+        before: () => saveDataBeforeLeaving(),
+      },
     },
-    logout: {
+    signUp: {
       alias: ['hello', 'yellow'],
       path: ({ match }) => `${match}/sign-up`,
       component: SignUpPage,
+      enter: {
+        before: () => userIsNotLoggedIn(),
+      },
     },
   },
-  change: ({ match: { path } }) => {
-    recordRouteForAnalytics(path);
+  change: {
+    after: ({ match: { path } }) => {
+      recordRouteForAnalytics(path);
+    },
   },
 });
 ```
@@ -108,6 +119,8 @@ Considerations in design:
 - Easily integrate the data persistors into existing apps.
 
 ```js
+import { Persistor } from 'lumbridge';
+import { string, object } from 'yup';
 import apolloClient from '../client';
 
 /**
@@ -115,14 +128,21 @@ import apolloClient from '../client';
  */
 const apolloPersistor = Persistor.create({
   validations: {
-    query: Yup.string().isRequired,
-    variables: Yup.object(),
+    query: string().required().isValid,
+    variables: object().isValid,
   },
   handler: () => ({ query, variables }) => {
     return apolloClient.query({ query, variables })
       .then(({ data }) => data);
   },
 });
+```
+
+Create instances of the persistor which you can listen to in your components.
+
+```js
+import React from 'react';
+import { apolloPersistor } from '../persistors/apolloPersistor';
 
 /**
  * Create an instance from the persistor, this will contain the common
@@ -130,7 +150,11 @@ const apolloPersistor = Persistor.create({
  */
 const meInstance = apolloPersistor.instance({
   map: () => ({
-    query: 'me { name }',
+    query: `
+      query($id: String) {
+        me(id: $id) { name }
+      }
+    `,
   }),
   scopes: {
     user: true
@@ -138,26 +162,99 @@ const meInstance = apolloPersistor.instance({
 });
 
 /**
- * Execute the query and then watch for the response.
+ * Here is how you can use the instance in a React component using hooks.
  */
-const unwatch = meInstance.execute()
-  .watch(({ data, error, loading }) => {
-    console.log(data, error, loading);
-  });
+const MyProfile = ({ id }) => {
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState(null);
   
-/**
- * Stop watching the data for new information.
- */
-unwatch();
+  /**
+   * Notice the empty array at the end. This will only fire when
+   * the component mounts and unmounts - not inbetween.
+   */
+  useEffect(() => {
+    const unwatch = meInstance.watch(({ data, loading, error }) => {
+        setError(error);
+        setLoading(loading);
+        setData(data);
+      });
+    return () => unwatch();
+  }, []);
+
+  /**
+   * Notice that this effect will refresh the query on a new id.
+   */
+  useEffect(() => {
+    meInstance.execute({
+      variables: { id },
+    });
+  }, [id]);
+
+  return (
+    <div>
+      {data.me.name}
+      {error && error.message}
+      {loading}
+    </div>
+  );
+};
 ```
 
 ### Store
 
 Considerations in design:
 
-- Provide a simple way to pass local data through an app.
-- Validate the local data as it comes in and provide clean and helpful data validation errors.
-- Use as a clean alternative to managing form information.
+- Access data in multiple locations throughout app without passing data through components.
+- Provides data validation to help avoid errors.
+- Is effective at managing form data.
+- Updates state using `store.update({})` which is similar to how `this.setState({})` works, only partially updating the store.
+- Reset the store by using `store.reset()` which will set the stores values back to their defaults.
+
+```js
+import { Store } from 'lumbridge';
+import { string, boolean, object } from 'yup';
+
+/**
+ * Create a data source which can be accessed from anywhere in the app.
+ */
+const authStore = Store.create({
+	schema: {
+		token: {
+      validate: string().isValid,
+      default: null,
+    },
+		userId: {
+      validate: string().isValid,
+      default: null,
+    },
+		loggedIn: {
+      validate: boolean().required().isValid,
+      default: false,
+    },
+    big: {
+      validate: object({
+        one: string().required(),
+        two: string().required(),
+      }).isValid,
+      default: null,
+    },
+	},
+	actions: {
+		updateUserId: store => ({ userId }) => {
+      store.update({
+        userId,
+        loggedIn: !!userId,
+      });
+    },
+	}
+});
+
+/**
+ * Quickly reset the store when you need to (such as logging out a user).
+ */
+const logoutUser = () => authStore.reset();
+```
 
 ### Theme
 
