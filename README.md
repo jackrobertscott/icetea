@@ -219,16 +219,16 @@ import { string, boolean, object } from 'yup';
  * Create a data source which can be accessed from anywhere in the app.
  */
 const authStore = Store.create({
-	schema: {
-		token: {
+  schema: {
+    token: {
       validate: string().isValid,
       default: null,
     },
-		userId: {
+    userId: {
       validate: string().isValid,
       default: null,
     },
-		loggedIn: {
+    loggedIn: {
       validate: boolean().required().isValid,
       default: false,
     },
@@ -239,21 +239,89 @@ const authStore = Store.create({
       }).isValid,
       default: null,
     },
-	},
-	actions: {
-		updateUserId: store => ({ userId }) => {
+  },
+  actions: {
+    loginUser: store => ({ token, userId }) => {
       store.update({
+      	token,
         userId,
-        loggedIn: !!userId,
+        loggedIn: Boolean(token && userId),
       });
     },
-	}
+  },
 });
+```
+
+You can then access the store in your components.
+
+```js
+import React from 'react';
+import { authStore } from '../stores/authStore';
+import { authRouter } from '../routers/authRouter';
 
 /**
- * Quickly reset the store when you need to (such as logging out a user).
+ * Normal stateless React component.
  */
-const logoutUser = () => authStore.reset();
+const HeaderBar () => (
+  <Menu>
+    <Item onClick={() => authStore.reset() && authRouter.navigate('login')}>Logout</Item>
+  </Menu>
+);
+```
+
+Manage routes effectively with stores.
+
+```js
+import { Router } from 'lumbridge';
+import { authStore } from '../stores/authStore';
+
+/**
+ * Use the store as a route guard.
+ */
+const authRouter = Router.create({
+  routes: {
+    home: {
+      exact: true,
+      path: ({ match }) => `${match}/`,
+      component: HomePage,
+      enter: {
+      	before: () => authStore.state.loggedIn,
+      },
+    },
+  },
+});
+```
+
+You can also effectively handle forms with your stores.
+
+```js
+import React from 'react';
+import { authStore } from '../stores/authStore';
+
+/**
+ * Normal stateless React component.
+ */
+const LoginForm = ({ onSubmit }) => (
+  <authStore.Form>
+    {({ state, errors, update }) => (
+      <form onSubmit={onSubmit}>
+        <div>
+          <input
+            type="text"
+            name="username"
+            value={state.username}
+            onChange={event => update({ username: event.target.value })}
+          />
+          {errors.username && <div>{errors.username}</div>}
+        </div>
+        <div>
+          <authStore.Field name="password" />
+          <authStore.Error name="password" />
+        </div>
+      </form>
+    )}
+  </authStore.Form>
+);
 ```
 
 ### Theme
