@@ -303,14 +303,14 @@ import { authStore } from '../stores/authStore';
  */
 const LoginForm = ({ onSubmit }) => (
   <authStore.Form>
-    {({ state, errors, update }) => (
+    {({ state, errors }) => (
       <form onSubmit={onSubmit}>
         <div>
           <input
             type="text"
             name="username"
             value={state.username}
-            onChange={event => update({ username: event.target.value })}
+            onChange={event => authStore.update({ username: event.target.value })}
           />
           {errors.username && <div>{errors.username}</div>}
         </div>
@@ -322,6 +322,44 @@ const LoginForm = ({ onSubmit }) => (
     )}
   </authStore.Form>
 );
+
+/**
+ * Here is the same form but using React hooks.
+ */
+const LoginFormHooks = ({ onSubmit }) => {
+  const [errors, setErrors] = useState({});
+  const [state, setState] = useState({});
+  
+  /**
+   * Notice the empty array at the end. This will only fire when
+   * the component mounts and unmounts - not inbetween.
+   */
+  useEffect(() => {
+    const unwatch = authStore.watch(({ state, errors }) => {
+      setErrors(errors)
+      setState(state);
+    });
+    return () => unwatch();
+  }, []);
+
+  return (
+    <form onSubmit={onSubmit}>
+      <div>
+        <input
+          type="text"
+          name="username"
+          value={state.username}
+          onChange={event => authStore.update({ username: event.target.value })}
+        />
+        {errors.username && <div>{errors.username}</div>}
+      </div>
+      <div>
+        <authStore.Field name="password" />
+        <authStore.Error name="password" />
+      </div>
+    </form>
+  );
+};
 ```
 
 ### Theme
