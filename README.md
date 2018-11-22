@@ -17,13 +17,13 @@ Using [npm](https://www.npmjs.com/package/lumbridge):
 npm i --save lumbridge
 ```
 
-Using yarn
+Using yarn:
 
 ```shell
 yarn add lumbridge
 ```
 
-Import into a your react app like normal.
+Import into a your app:
 
 ```js
 import { Store } from 'lumbridge';
@@ -125,7 +125,8 @@ const apolloPersistor = Persistor.create({
 });
 
 /**
- * Create an instance from the persistor, this will contain the common request information (such as a GraphQL query).
+ * Create an instance from the persistor, this will contain the common
+ * request information (such as a GraphQL query).
  */
 const meInstance = apolloPersistor.instance({
   map: () => ({
