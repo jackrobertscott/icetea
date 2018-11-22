@@ -114,26 +114,26 @@ import apolloClient from '../client';
  * Create a persistor which will be the interface with the data source.
  */
 const apolloPersistor = Persistor.create({
-	validations: {
-		query: Yup.string().isRequired,
-		variables: Yup.object(),
-	},
-	handler: () => ({ query, variables }) => {
-		return apolloClient.query({ query, variables })
-			.then(({ data }) => data);
-	},
+  validations: {
+    query: Yup.string().isRequired,
+    variables: Yup.object(),
+  },
+  handler: () => ({ query, variables }) => {
+    return apolloClient.query({ query, variables })
+      .then(({ data }) => data);
+  },
 });
 
 /**
  * Create an instance from the persistor, this will contain the common request information (such as a GraphQL query).
  */
 const meInstance = apolloPersistor.instance({
-	map: () => ({
-		query: 'me { name }',
-	}),
-	scopes: {
-		user: true
-	},
+  map: () => ({
+    query: 'me { name }',
+  }),
+  scopes: {
+    user: true
+  },
 });
 
 /**
