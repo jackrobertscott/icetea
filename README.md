@@ -1,6 +1,6 @@
 # Lumbridge
 
-> 🏰 Focused & simple helper objects which improve React application structure and composability.
+> 🏰 Focused & simple helper objects which improve React application management.
 
 ## Main Features
 
@@ -39,6 +39,8 @@ const authStore = Store.create({
 
 ### Router
 
+Structured and intuitive routing which allows you to easily create routes and manage the events related to those routes.
+
 Considerations in design:
 
 - Routing into a component can be aborted by checking data on a routes `enter` method.
@@ -51,6 +53,9 @@ Considerations in design:
 import { Router } from 'lumbridge';
 import { HomePage, LoginPage, SignUpPage } from '../components/pages';
 
+/**
+ * Define your routes in a regular JavaScript method.
+ */
 const authRouter = Router.create({
   routes: {
     home: {
@@ -81,12 +86,85 @@ const authRouter = Router.create({
 ```js
 import authRouter from '../routers/authRouter';
 
+/**
+ * Add the routes into your React component like a regular component.
+ */
 const App = () => (
   <Dashboard>
     <authRouter.Routes />
   </Dashboard>
 );
 ```
+
+### Persistor
+
+Easily communicate and interact with persistant data stores such as `localStorage`, GraphQL Servers, REST Servers, etc.
+
+Considerations in design:
+
+- Built to be flexible so you can use interface with multiple kinds of data stores.
+- Seperates the data *requests* from the data *retrieval* so you can access the data in multiple locations.
+- Data *scopes* allow multiple requests to depend on each other and update efficiently with minimal overhead.
+- Easily integrate the data persistors into existing apps.
+
+```js
+import apolloClient from '../client';
+
+/**
+ * Create a persistor which will be the interface with the data source.
+ */
+const apolloPersistor = Persistor.create({
+	validations: {
+		query: Yup.string().isRequired,
+		variables: Yup.object(),
+	},
+	handler: () => ({ query, variables }) => {
+		return apolloClient.query({ query, variables })
+			.then(({ data }) => data);
+	},
+});
+
+/**
+ * Create an instance from the persistor, this will contain the common request information (such as a GraphQL query).
+ */
+const meInstance = apolloPersistor.instance({
+	map: () => ({
+		query: 'me { name }',
+	}),
+	scopes: {
+		user: true
+	},
+});
+
+/**
+ * Execute the query and then watch for the response.
+ */
+const unwatch = meInstance.execute()
+  .watch(({ data, error, loading }) => {
+    console.log(data, error, loading);
+  });
+  
+/**
+ * Stop watching the data for new information.
+ */
+unwatch();
+```
+
+### Store
+
+Considerations in design:
+
+- Provide a simple way to pass local data through an app.
+- Validate the local data as it comes in and provide clean and helpful data validation errors.
+- Use as a clean alternative to managing form information.
+
+### Theme
+
+Considerations in design:
+
+- Arrange your styles in groups of functional properties and use those groups to compose component styles.
+- Write your styles as JavaScript objects which makes code reuse and refactoring simple.
+- Default CSS is removed from all HTML elements so that you don't have to undo styles all the time.
 
 ## Packages
 
