@@ -26,76 +26,99 @@ const router = Router.create({
 });
 ```
 
-## Examples
+## API
 
-Problems being addressed:
+### Config
 
-1. Remove complexity behind structuring routes (caused by components).
-2. Easier to access the exact path of a route when creating links to it.
-3. Route guards can be easily implemented.
-4. Save data before exiting can also be done pretty easily.
+Each router is configured with a `config` object:
 
 ```js
-const authRouter = Router.create({
-  /**
-   * Listen for changes in the route.
-   */
-  change: ({ location }) => console.log(location),
-  /**
-   * Define routes that can be accessed with this router.
-   */
+const router = Router.create(config);
+```
+
+This config object will contain all the information required by the router.
+
+#### `config.routes`
+
+Type: `object`
+
+Each route shown by the router will be stored in this object.
+
+```js
+const router = Router.create({
   routes: {
-    /**
-     * Each route is given a key which represents the name of the
-     * route which not only makes it easy to use but also structures
-     * the code quite nicely.
-     */
+    // routes...
+  },
+});
+```
+
+Rules:
+
+- Only one route will be shown at a time for a single router (but you may use multiple routers).
+- The route with a `path` most similar to the actual route will be rendered.
+- Routes with the `exact` key will be matched only when the location exactly matches the `path` key.
+- Each route has a key (e.g. `config.routes.home`) which may be used to identify the route.
+- You may return a `Promise` to any of the handlers and they will wait for the promise to resolve before continuing.
+
+```js
+const router = Router.create({
+  routes: {
     home: {
+      path: '/',
       exact: true,
-      path: ({ match }) => `${match}/`,
       component: HomePage,
     },
-    /**
-     * See how you can add "enter" and "leave" methods which
-     * help people set routing guards and protection methods
-     * which might save a form's data before routing away.
-     */
-    login: {
-      path: ({ match }) => `${match}/login`,
-      component: LoginForm,
-      enter: () => someStateAccess.usersIsNotSignedIn,
-      leave: () => saveTheDataBeforeRouting(),
+    dashboard: {
+      path: '/dashboard'
+      component: Dashboard,
+      enter: {
+        before: () => userIsLoggedIn(),
+      },
+      leave: {
+        before: () => makeSureAllDataIsSaved(),
+      },
     },
-    /**
-     * In this route we have some aliases which can be used to
-     * request a path to a route by a different name.
-     */
-    logout: {
-      alias: ['hello', 'yellow'],
-      path: ({ match }) => `${match}/login`,
-      component: LoginForm,
-    },
-  }
+  },
 });
-
-/**
- * Easily insert the routes into the app like a normal component.
- */
-const App = () => (
-  <div>
-    <h1>Use Like Another Component</h1>
-    <nav>
-      <authRouter.Link to="home" params={{ userId: '123' }}>
-        Home
-      </authRouter.Link>
-      <a {...authRouter.anchor('login', { userId: '123' })}>
-        Login
-      </a>
-    </nav>
-    <authRouter.Routes />
-  </div>
-);
 ```
+
+Route config:
+
+- `routes[routeName].path` [string]: the path which will be checked against the url.
+- `routes[routeName].component` [node]: a React component which will be shown when this route is rendered.
+- `routes[routeName].exact` [node]: specifies that this route must match exactly to the url.
+- `routes[routeName].enter.before` [func]: handler called before the route is rendered. Returning false to this will stop the route rendering and is a good place to put route guards.
+- `routes[routeName].enter.after` [func]: handler called after the route has been rendered.
+- `routes[routeName].leave.before` [func]: handler called before the route is rendered. Returning false to this will stop the route from changing.
+- `routes[routeName].leave.after` [func]: handler called after the route has been rendered.
+
+#### `config.change`
+
+Type: `object`
+
+```js
+const router = Router.create({
+  change: {
+    // handlers...
+  },
+});
+```
+
+This is a collection of handlers which will be called when the router changes any of it's routes.
+
+```js
+const router = Router.create({
+  change: {
+    before: () => console.log('The route is about to change.'),
+    after: () => console.log('The route has changed.'),
+  },
+});
+```
+
+Change config:
+
+- `config.change.before` [func]: handler called before the route changes. Returning false to this will prevent the route from changing.
+- `config.change.after` [func]: handler called after rendering a route.
 
 ## Packages
 
