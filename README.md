@@ -169,10 +169,6 @@ const MyProfile = ({ id }) => {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState(null);
   
-  /**
-   * Notice the empty array at the end. This will only fire when
-   * the component mounts and unmounts - not inbetween.
-   */
   useEffect(() => {
     const unwatch = meInstance.watch(({ data, loading, error }) => {
         setError(error);
@@ -180,16 +176,13 @@ const MyProfile = ({ id }) => {
         setData(data);
       });
     return () => unwatch();
-  }, []);
+  }, []); // fire only on mount and unmount (empty array)
 
-  /**
-   * Notice that this effect will refresh the query on a new id.
-   */
   useEffect(() => {
     meInstance.execute({
       variables: { id },
     });
-  }, [id]);
+  }, [id]); // fire only when id changes
 
   return (
     <div>
@@ -297,6 +290,7 @@ You can also effectively handle forms with your stores.
 ```js
 import React from 'react';
 import { authStore } from '../stores/authStore';
+import FieldError from '../components/FieldError';
 
 /**
  * Normal stateless React component.
@@ -316,7 +310,8 @@ const LoginForm = ({ onSubmit }) => (
         </div>
         <div>
           <authStore.Field name="password" />
-          <authStore.Error name="password" />
+          <!-- FieldError will only show when error present and the message will be it's children -->
+          <authStore.Error name="password" component={FieldError} />
         </div>
       </form>
     )}
@@ -330,17 +325,13 @@ const LoginFormHooks = ({ onSubmit }) => {
   const [errors, setErrors] = useState({});
   const [state, setState] = useState({});
   
-  /**
-   * Notice the empty array at the end. This will only fire when
-   * the component mounts and unmounts - not inbetween.
-   */
   useEffect(() => {
     const unwatch = authStore.watch(({ state, errors }) => {
       setErrors(errors)
       setState(state);
     });
     return () => unwatch();
-  }, []);
+  }, []); // fire only on mount and unmount (empty array)
 
   return (
     <form onSubmit={onSubmit}>
@@ -355,7 +346,7 @@ const LoginFormHooks = ({ onSubmit }) => {
       </div>
       <div>
         <authStore.Field name="password" />
-        <authStore.Error name="password" />
+        <authStore.Error name="password" component={FieldError} />
       </div>
     </form>
   );
@@ -369,6 +360,91 @@ Considerations in design:
 - Arrange your styles in groups of functional properties and use those groups to compose component styles.
 - Write your styles as JavaScript objects which makes code reuse and refactoring simple.
 - Default CSS is removed from all HTML elements so that you don't have to undo styles all the time.
+- Properties values can only be strings and numbers to promote good code design.
+- Mutations can be created to alter few of the properties and provides flexibility with styles.
+- Actions are methods which can map component `props` onto mutations and styles.
+
+```js
+import { Theme } from 'lumbridge';
+
+/**
+ * Create a group of CSS properties and add some potential mutations.
+ */
+const paddings = Theme.create({
+  defaults: { padding: '14px' },
+  mutations: {
+    tiny: { padding: '16px' },
+    small: { padding: '16px' },
+    medium: { padding: '16px' },
+    big: { padding: '16px' },
+  },
+});
+
+/**
+ * Groups of multiple properties can be created as well.
+ */
+const fonts = Theme.create({
+  defaults: {
+    lineHeight: '1.15',
+    fontFamily: 'inherit',
+    fontSize: '100%',
+    fontWeight: 'normal',
+  },
+  mutations: {
+    primary: {
+      fontSize: '20px',
+      fontWeight: 'bold',
+    },
+    mono: {
+      fontFamily: 'monospace',
+    },
+    active: {
+      color: 'blue',
+    },
+  },
+  actions: {
+    active: theme => ({ active }) =>
+      theme.mutation({
+        active,
+        mono: !active,
+      }),
+  },
+});
+```
+
+Import the themes and use them to construct new components.
+
+```js
+import React from 'react';
+import { Theme } from 'lumbridge';
+import { paddings, fonts } from '../themes';
+
+/**
+ * Create a styled React component with your themes.
+ */
+const Wrap = Theme.combo({
+  as: 'div',
+  theme: [
+    paddings.mutations({ big: true }),
+    fonts.mutations({ primary: true }).actions({ active: true }),
+  ],
+  extra: {
+    backgroundColor: 'green',
+  },
+});
+
+/**
+ * Use the styled react component like normal, or get create an element
+ * directly from the theme.
+ */
+const StyledComponent = ({ active }) => (
+  <Wrap active={active}>
+    <fonts.Element as="span" mutation="mono">
+      Hello world!
+    </fonts.Element>
+  </Wrap>
+);
+```
 
 ## Packages
 
