@@ -42,7 +42,7 @@ This config object will contain all the information required by the router.
 
 Type: `object`
 
-Each route shown by the router will be stored in this object.
+A collection of routes which may be rendered by the router relative to the app's url.
 
 ```js
 const router = Router.create({
@@ -52,13 +52,7 @@ const router = Router.create({
 });
 ```
 
-Rules:
-
-- Only one route will be shown at a time for a single router (but you may use multiple routers).
-- The route with a `path` most similar to the actual route will be rendered.
-- Routes with the `exact` key will be matched only when the location exactly matches the `path` key.
-- Each route has a key (e.g. `config.routes.home`) which may be used to identify the route.
-- You may return a `Promise` to any of the handlers and they will wait for the promise to resolve before continuing.
+Example:
 
 ```js
 const router = Router.create({
@@ -82,7 +76,7 @@ const router = Router.create({
 });
 ```
 
-Route config:
+Properties:
 
 - `[routeName].path` [string]: the path which will be checked against the url.
 - `[routeName].component` [node]: a React component which will be shown when this route is rendered.
@@ -92,9 +86,19 @@ Route config:
 - `[routeName].leave.before` [func]: handler called before the route is rendered. Returning false to this will stop the route from changing.
 - `[routeName].leave.after` [func]: handler called after the route has been rendered.
 
+Rules:
+
+- Only one route will be shown at a time for a single router (but you may use multiple routers).
+- The route with a `path` most similar to the actual route will be rendered.
+- Routes with the `exact` key will be matched only when the location exactly matches the `path` key.
+- Each route has a key (e.g. `config.routes.home`) which may be used to identify the route.
+- You may return a `Promise` to any of the handlers and they will wait for the promise to resolve before continuing.
+
 #### `config.change`
 
 Type: `object`
+
+A Collection of handlers which will be called when the router renders a new route.
 
 ```js
 const router = Router.create({
@@ -104,7 +108,7 @@ const router = Router.create({
 });
 ```
 
-This is a collection of handlers which will be called when the router changes any of it's routes.
+Example:
 
 ```js
 const router = Router.create({
@@ -115,7 +119,7 @@ const router = Router.create({
 });
 ```
 
-Change config:
+Properties:
 
 - `change.before` [func]: handler called before the route changes. Returning false to this will prevent the route from changing.
 - `change.after` [func]: handler called after rendering a route.
@@ -126,13 +130,17 @@ Change config:
 
 Type: `node` (React component)
 
+A React component which is used to display the routes in the DOM.
+
 ```js
-const faladorRouter = Router.create(config);
+const faladorRouter = Router.create({
+  routes: {
+    // code...
+  },
+});
 
-const FaladorRoutes = () => <faladorRouter.Routes />
+const App = () => <faladorRouter.Routes />
 ```
-
-This component can be inserted into regular React code like normal.
 
 #### Nested Routes
 
