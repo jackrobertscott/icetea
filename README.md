@@ -1,6 +1,6 @@
 # Lumbridge
 
-> 🏰 Simple library which seamlessly separates app logic from React components.
+> 🏰 React application management made simple.
 
 ## Main Features
 
