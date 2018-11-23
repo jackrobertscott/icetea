@@ -120,13 +120,13 @@ Change config:
 - `change.before` [func]: handler called before the route changes. Returning false to this will prevent the route from changing.
 - `change.after` [func]: handler called after rendering a route.
 
-### Components
+### Usage
 
 #### `router.Routes`
 
 Type: `node` (React component)
 
-```
+```js
 const faladorRouter = Router.create(config);
 
 const FaladorRoutes = () => <faladorRouter.Routes />
@@ -138,10 +138,12 @@ This component can be inserted into regular React code like normal.
 
 The router does not provide functionality for nested routes. This has been done on *purpose* to avoid unneeded complexity. If you would like to use nested routes, simply create multiple route components and put the routes inside the rendered components.
 
-Basic nested routes example:
+Example:
 
-```
-const nestedRoutes = Router.create(config);
+```js
+const nestedRoutes = Router.create({
+  // routes...
+});
 
 const NestedComponent = () => (
   <InnerWrap>
@@ -151,7 +153,7 @@ const NestedComponent = () => (
 
 const parentRoutes = Router.create({
   routes: {
-    nest: {
+    nested: {
       path: '/cool',
       component: NestedComponent,
     },
