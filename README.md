@@ -1,6 +1,6 @@
 # Lumbridge
 
-> 🏰 Focused & simple helper objects which improve React application management.
+> 🏰 Simple library which seamlessly separates app logic from React components.
 
 ## Main Features
 
