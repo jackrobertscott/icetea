@@ -310,7 +310,7 @@ const LoginForm = ({ onSubmit }) => (
         </div>
         <div>
           <authStore.Field name="password" />
-          <!-- FieldError will only show when error present and the message will be it's children -->
+          <!-- FieldError will only show when error present and the message will be the children -->
           <authStore.Error name="password" component={FieldError} />
         </div>
       </form>
