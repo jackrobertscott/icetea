@@ -98,7 +98,7 @@ Rules:
 
 Type: `object`
 
-A Collection of handlers which will be called when the router renders a new route.
+A collection of handlers which will be called when the router renders a new route.
 
 ```js
 const router = Router.create({
@@ -124,6 +124,34 @@ Properties:
 - `change.before` [func]: handler called before the route changes. Returning false to this will prevent the route from changing.
 - `change.after` [func]: handler called after rendering a route.
 
+#### `config.nomatch`
+
+Type: `object`
+
+These values are used when *no* routes are matched by the routes.
+
+```js
+const router = Router.create({
+  nomatch: {
+    // code...
+  },
+});
+```
+
+Example:
+
+```js
+const router = Router.create({
+  nomatch: {
+    redirect: '/not-found',
+  },
+});
+```
+
+Properties:
+
+- `nomatch.redirect` [node]: the url which the app will redirect to when no route matches found.
+
 ### Usage
 
 #### `router.Routes`
@@ -133,13 +161,13 @@ Type: `node` (React component)
 A React component which is used to display the routes in the DOM.
 
 ```js
-const faladorRouter = Router.create({
+const router = Router.create({
   routes: {
     // code...
   },
 });
 
-const App = () => <faladorRouter.Routes />
+const App = () => <router.Routes />
 ```
 
 #### Nested Routes

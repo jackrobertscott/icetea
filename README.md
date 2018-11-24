@@ -60,12 +60,12 @@ import { HomePage, LoginPage, SignUpPage } from '../components/pages';
 const authRouter = Router.create({
   routes: {
     home: {
+      path: '/',
       exact: true,
-      path: ({ match: { path } }) => `${path}/`,
       component: HomePage,
     },
     login: {
-      path: ({ match: { path } }) => `${path}/login`,
+      path: '/login',
       component: LoginForm,
       enter: {
         before: () => userIsNotLoggedIn(),
@@ -75,9 +75,9 @@ const authRouter = Router.create({
       },
     },
     signUp: {
-      alias: ['hello', 'yellow'],
-      path: ({ match }) => `${match}/sign-up`,
+      path: '/sign-up',
       component: SignUpPage,
+      alias: ['hello', 'yellow'],
       enter: {
         before: () => userIsNotLoggedIn(),
       },
@@ -128,8 +128,8 @@ import apolloClient from '../client';
  */
 const apolloPersistor = Persistor.create({
   validations: {
-    query: string().required().isValid,
-    variables: object().isValid,
+    query: string().required(),
+    variables: object(),
   },
   handler: () => ({ query, variables }) => {
     return apolloClient.query({ query, variables })
@@ -199,7 +199,7 @@ const MyProfile = ({ id }) => {
 Considerations in design:
 
 - Access data in multiple locations throughout app without passing data through components.
-- Provides data validation to help avoid errors.
+- Get awesome data validation by using [Yup](https://www.npmjs.com/package/yup) the third party validation library.
 - Is effective at managing form data.
 - Updates state using `store.update({})` which is similar to how `this.setState({})` works, only partially updating the store.
 - Reset the store by using `store.reset()` which will set the stores values back to their defaults.
@@ -214,29 +214,28 @@ import { string, boolean, object } from 'yup';
 const authStore = Store.create({
   schema: {
     token: {
-      validate: string().isValid,
       default: null,
     },
     userId: {
-      validate: string().isValid,
       default: null,
+      validate: string(),
     },
     loggedIn: {
-      validate: boolean().required().isValid,
       default: false,
+      validate: boolean().required(),
     },
     big: {
+      default: null,
       validate: object({
         one: string().required(),
         two: string().required(),
-      }).isValid,
-      default: null,
+      }),
     },
   },
   actions: {
     loginUser: store => ({ token, userId }) => {
       store.update({
-      	token,
+        token,
         userId,
         loggedIn: Boolean(token && userId),
       });
@@ -274,11 +273,11 @@ import { authStore } from '../stores/authStore';
 const authRouter = Router.create({
   routes: {
     home: {
+      path: '/',
       exact: true,
-      path: ({ match }) => `${match}/`,
       component: HomePage,
       enter: {
-      	before: () => authStore.state.loggedIn,
+        before: () => authStore.state.loggedIn,
       },
     },
   },
@@ -296,7 +295,7 @@ import FieldError from '../components/FieldError';
  * Normal stateless React component.
  */
 const LoginForm = ({ onSubmit }) => (
-  <authStore.Form>
+  <authStore.Listen>
     {({ state, errors }) => (
       <form onSubmit={onSubmit}>
         <div>
@@ -315,7 +314,7 @@ const LoginForm = ({ onSubmit }) => (
         </div>
       </form>
     )}
-  </authStore.Form>
+  </authStore.Listen>
 );
 
 /**

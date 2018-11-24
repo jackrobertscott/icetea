@@ -26,92 +26,227 @@ const store = Store.create({
 });
 ```
 
-## Examples
+## API
 
-Problems being addressed:
+### Config
 
-- Creating a data store is really simple (much easier than creating redux reducers).
-- Access and change data store from anywhere in the app that imports the store.
-- Easily integrates with forms making form validation super simple.
+Each store is configured with a `config` object:
 
 ```js
-/**
- * Keep it simple.
- *
- * 1. No asyncronise calls, leave that work up to the data services.
- * 2. Make the data flat, avoid complex objects.
- */
-const authStore = Store.create({
-  /**
-   * This is the initial state of the store.
-   */
-  state: {
-    token: str({ default: '' }),
-    userId: null,
-    loggedIn: false,
-  },
-  /**
-   * Add validations on the store data which will populate an
-   * errors object on this store (useful for forms).
-   */
-  validations: {
-    token: Yup.string(),
-    userId: Yup.string(),
-    loggedIn: Yup.boolean().required(),
-  },
-  /**
-   * Mutations are a cross between a reducer function and the setState
-   * method which does not require you to destructure over and over.
-   *
-   * The reason we use "store.update({ })" instead of just returning
-   * an object "({ })" is because it helps people understand how the
-   * api works and that enables them to make better code decisions.
-   */
-  actions: {
-    updateUserId: store => ({ userId }) => store.update({
-      userId,
-      loggedIn: !!userId,
-    }),
-  }
-});
+const store = Store.create(config);
+```
 
-/**
- * Use in an auth routing guard...
- */
-const authRouter = Router.create({
-  routes: {
-    home: {
-      exact: true,
-      path: ({ match }) => `${match}/`,
-      component: HomePage,
-      enter: () => authStore.state.loggedIn,
+This config object will contain all the information required by the store.
+
+#### `config.schema`
+
+Type: `object`
+
+Describes the shape of the state object and can optionally set validations on that shape.
+
+```js
+const store = Store.create({
+  schema: {
+    // properties...
+  },
+});
+```
+
+Example:
+
+```js
+import { string, boolean, object } from 'yup';
+
+const store = Store.create({
+  schema: {
+    userId: {
+      default: null,
+      validate: string(),
+    },
+    loggedIn: {
+      default: false,
+      validate: boolean().required(),
+    },
+    deepExample: {
+      default: null,
+      validate: object({
+        one: string(),
+        two: string().required(),
+      }),
+    },
+  },
+});
+```
+
+**Note:** the above example uses the validation library [Yup](https://www.npmjs.com/package/yup) to make thinds easier but you can use any validation function.
+
+Properties:
+
+- `[propName].validate` [func]: a function which is passed the value to check and should return `true` if it is valid.
+- `[propName].default` [any]: a default value set to the property.
+
+#### `config.actions`
+
+Type: `object`
+
+The actions object is used for more complex state manipulation functions. However, you do not need to use this in order to use the store.
+
+```js
+const store = Store.create({
+  actions: {
+    // actions...
+  },
+});
+```
+
+Example:
+
+```js
+const store = Store.create({
+  actions: {
+    loginUser: ({ update }) => ({ token, userId }) => {
+      update({
+        token,
+        userId,
+        loggedIn: Boolean(token && userId),
+      });
     },
   },
 });
 
-/**
- * Use in a form...
- */
-const LoginForm = () => (
-  <form>
-    <div>
-      <input
-        type="text"
-        name="username"
-        value={authStore.state.username}
-        onChange={
-          event => authStore.update({ username: event.target.value })
-        }
-      />
-      {authStore.errors.username && <div>{authStore.errors.username}</div>}
-    </div>
-    <div>
-      <authStore.Field name="username" />
-      <authStore.Error name="username" />
-    </div>
-  </form>
-);
+store.dispatch.loginUser({ token, userId });
 ```
+
+Properties:
+
+- `[actionName]` [func]: this is a function which expects another function to be the return value i.g. `({ update }) => payload => {/* code... */}`.
+
+### Usage
+
+#### `store.update`
+
+Type: `func`
+
+Make a partial update to the values of the store.
+
+```js
+import { string } from 'yup';
+
+const store = Store.create({
+  schema: {
+    example: {
+      default: '',
+      validate: string(),
+    },
+    other: {
+      // code...
+    },
+  },
+})
+
+store.update({
+  example: 'Hello world!',
+});
+```
+
+**Note:** when `store.update` is called, a new object is created by combining the old values with the new values passed into the update function. This is similar to how `this.setState()` works in React components.
+
+#### `store.dispatch[actionName]`
+
+Type: `func`
+
+To improve code reuse and encourage refactoring of your code, actions let you update multiple state values in one go.
+
+```js
+const store = Store.create({
+  schema: {
+    // code...
+  },
+  actions: {
+    doSomething: ({ update }) => payload => {
+      update({
+        questName: payload.name,
+        doingQuest: payload.isInFalador,
+      })
+    }
+  },
+})
+
+store.dispatch.doSomething({
+  name: 'Hello world!',
+  isInFalador: true,
+});
+```
+
+Notice how the `doSomething` action is being set in `actions` and then is being dispatched later on in the code.
+
+#### `store.watch`
+
+Type: `func`
+
+Pass a listener function into this in order to get informative updates on changes in the store.
+
+```js
+const store = Store.create(config);
+
+const unwatch = store.watch(({ state, errors }) => {
+  console.log(state); // the current values in the store
+  console.log(errors); // any errors found when updating the store
+});
+
+const componentWillUnmount = () => unwatch();
+```
+
+**Note:** when you start watching a store, don't forget to call the `unwatch` function when the component unmounts and you stop listening for changes (see above code). If you don't unwatch, then you might cause a memory leak.
+
+#### `store.state`
+
+Type: `object`
+
+This property gives you access to the current values of the store.
+
+```js
+const authStore = Store.create(config);
+
+const authRouter = Router.create({
+  routes: {
+    home: {
+      path: '/',
+      exact: true,
+      component: HomePage,
+      enter: {
+        before: () => authStore.state.loggedIn,
+      },
+    },
+  },
+});
+```
+
+The above code will only allow the use to access the home page when they are logged in.
+
+#### `store.errors`
+
+Type: `object`
+
+This property gives you access to any errors between the state and the validators.
+
+```js
+const userFormStore = Store.create(config);
+
+const usersRouter = Router.create({
+  routes: {
+    home: {
+      path: '/update',
+      component: UserUpdateForm,
+      leave: {
+        before: () => !userFormStore.errors.length,
+      },
+    },
+  },
+});
+```
+
+The above code only allows users to leave when there are no errors in the store.
 
 ## Packages
 
