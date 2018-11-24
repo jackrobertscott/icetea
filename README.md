@@ -41,6 +41,8 @@ const authStore = Store.create({
 
 Structured and intuitive routing which allows you to easily create routes and manage the events related to those routes.
 
+[See detailed docs.](https://github.com/jackrobertscott/lumbridge/tree/master/packages/lumbridge-router)
+
 Considerations in design:
 
 - Routing into a component can be aborted by checking data on a routes `enter` method.
@@ -110,6 +112,8 @@ const App = () => (
 ### Persistor
 
 Easily communicate and interact with persistant data stores such as `localStorage`, GraphQL Servers, REST Servers, etc.
+
+[See detailed docs.](https://github.com/jackrobertscott/lumbridge/tree/master/packages/lumbridge-persistor)
 
 Considerations in design:
 
@@ -195,6 +199,10 @@ const MyProfile = ({ id }) => {
 ```
 
 ### Store
+
+Share and validate data in multiple places around an app.
+
+[See detailed docs.](https://github.com/jackrobertscott/lumbridge/tree/master/packages/lumbridge-store)
 
 Considerations in design:
 
@@ -353,6 +361,10 @@ const LoginFormHooks = ({ onSubmit }) => {
 ```
 
 ### Theme
+
+A new approach to styling components, taking a more functional approach.
+
+[See detailed docs.](https://github.com/jackrobertscott/lumbridge/tree/master/packages/lumbridge-theme)
 
 Considerations in design:
 
