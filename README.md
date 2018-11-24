@@ -414,11 +414,12 @@ const fonts = Theme.create({
     },
   },
   actions: {
-    active: theme => ({ active }) =>
-      theme.mutation({
-        active,
-        mono: !active,
+    deactivate: ({ use }) => ({ deactivate }) => {
+      return use({
+        active: !deactivate,
+        mono: deactivate,
       }),
+    };
   },
 });
 ```
@@ -429,6 +430,7 @@ Import the themes and use them to construct new components.
 import React from 'react';
 import { Theme } from 'lumbridge';
 import { paddings, fonts } from '../themes';
+import config from '../config';
 
 /**
  * Create a styled React component with your themes.
@@ -436,8 +438,8 @@ import { paddings, fonts } from '../themes';
 const Wrap = Theme.combo({
   as: 'div',
   theme: [
-    paddings.mutations({ big: true }),
-    fonts.mutations({ primary: true }).actions({ active: true }),
+    paddings.use({ tiny: config.compressed ? true : false }),
+    fonts.use({ primary: true }),
   ],
   extra: {
     backgroundColor: 'green',
@@ -450,9 +452,9 @@ const Wrap = Theme.combo({
  */
 const StyledComponent = ({ active }) => (
   <Wrap active={active}>
-    <fonts.Element as="span" mutation="mono">
+    <fonts.Instance as="span" mutation="mono">
       Hello world!
-    </fonts.Element>
+    </fonts.Instance>
   </Wrap>
 );
 ```
