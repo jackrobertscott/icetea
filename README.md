@@ -265,13 +265,11 @@ const authStore = Store.create({
     },
   },
   actions: {
-    loginUser: store => ({ token, userId }) => {
-      store.update({
-        token,
-        userId,
-        loggedIn: Boolean(token && userId),
-      });
-    },
+    loginUser: ({ token, userId }) => ({
+      token,
+      userId,
+      loggedIn: Boolean(token && userId),
+    }),
   },
 });
 ```
@@ -357,9 +355,9 @@ const LoginFormHooks = ({ onSubmit }) => {
   const [state, setState] = useState({});
   
   useEffect(() => {
-    const unwatch = authStore.watch(({ state, errors }) => {
-      setErrors(errors)
-      setState(state);
+    const unwatch = authStore.watch({
+      state: state => setState(state),
+      errors: errors => setErrors(errors),
     });
     return () => unwatch();
   }, []); // fire only on mount and unmount (empty array)
