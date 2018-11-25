@@ -122,6 +122,9 @@ Example:
 
 ```js
 const fonts = Theme.create({
+  base: {
+    color: 'black',
+  },
   mutations: {
     mono: {
       fontFamily: 'monospace',
