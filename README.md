@@ -166,19 +166,14 @@ import { apolloPersistor } from '../persistors/apolloPersistor';
  * Create an instance from the persistor, this will contain the common
  * request information (such as a GraphQL query).
  */
-const meQueryAction = apolloPersistor.instance.query({
-  map: ({ variables }) => ({
-    query: `
-      query($id: String) {
-        me(id: $id) { name }
-      }
-    `,
-    variables,
-  }),
-  scopes: {
-    user: true,
-  },
-});
+const meQueryAction = apolloPersistor.map.query(({ variables }) => ({
+  query: `
+    query($id: String) {
+      me(id: $id) { name }
+    }
+  `,
+  variables,
+}));
 
 /**
  * Here is how you can use the instance in a React component using hooks.

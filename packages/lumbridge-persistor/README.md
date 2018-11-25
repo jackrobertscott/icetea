@@ -47,7 +47,7 @@ A set of methods which provide an common interface for interacting with a data s
 ```js
 const serverPersistor = Persistor.create({
   actions: {
-    // routes...
+    // code...
   },
 });
 ```
@@ -85,6 +85,53 @@ Properties:
 
 - `[actionName].payload` [object]: a set of validations used to check that the payload is the correct shape and type.
 - `[actionName].handler` [func]: the executed function which handles
+
+#### `persistor.map[actionName]`
+
+Type: `func`
+
+Create a persistor instance with more specific properties to the method being called.
+
+```js
+const serverPersistor = Persistor.create(config);
+
+const meQueryAction = serverPersistor.map.query(({ variables }) => ({
+  query: `
+    query($id: String) {
+      me(id: $id) { name }
+    }
+  `,
+  variables,
+}));
+```
+
+#### `persistorInstance.execute`
+
+Type: `func`
+
+Get the action to execute (with optionally passed in variables).
+
+```js
+meQueryAction.execute({
+  variables: { id },
+});
+```
+
+#### `persistorInstance.watch`
+
+Type: `func`
+
+Listen to any updates in the persistor as the persistor instance executes.
+
+```js
+const unwatch = meQueryAction.watch({
+  done: data => setData(data),
+  catch: error => setError(error),
+  status: loading => setLoading(loading),
+});
+
+const componentWillUnmount = () => unwatch();
+```
 
 ## Packages
 
