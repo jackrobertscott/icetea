@@ -104,13 +104,11 @@ Example:
 ```js
 const store = Store.create({
   actions: {
-    loginUser: ({ update }) => ({ token, userId }) => {
-      update({
-        token,
-        userId,
-        loggedIn: Boolean(token && userId),
-      });
-    },
+    loginUser: ({ token, userId }) => ({
+      token,
+      userId,
+      loggedIn: Boolean(token && userId),
+    }),
   },
 });
 
@@ -119,7 +117,7 @@ store.dispatch.loginUser({ token, userId });
 
 Properties:
 
-- `[actionName]` [func]: this is a function which expects another function to be the return value i.g. `({ update }) => payload => {/* code... */}`.
+- `[actionName]` [func]: actions enable you to manipulate multiple store values in one method.
 
 ### Usage
 
@@ -163,12 +161,10 @@ const store = Store.create({
     // code...
   },
   actions: {
-    doSomething: ({ update }) => payload => {
-      update({
-        questName: payload.name,
-        doingQuest: payload.isInFalador,
-      })
-    }
+    doSomething: ({ name, isInFalador }) => ({
+      questName: name,
+      doingQuest: isInFalador,
+    }),
   },
 })
 
@@ -189,9 +185,9 @@ Pass a listener function into this in order to get informative updates on change
 ```js
 const store = Store.create(config);
 
-const unwatch = store.watch(({ state, errors }) => {
-  console.log(state); // the current values in the store
-  console.log(errors); // any errors found when updating the store
+const unwatch = store.watch({
+  state: state => console.log(state),
+  errors: errors => console.log(errors),
 });
 
 const componentWillUnmount = () => unwatch();

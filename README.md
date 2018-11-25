@@ -131,13 +131,27 @@ import apolloClient from '../client';
  * Create a persistor which will be the interface with the data source.
  */
 const apolloPersistor = Persistor.create({
-  validations: {
-    query: string().required(),
-    variables: object(),
-  },
-  handler: () => ({ query, variables }) => {
-    return apolloClient.query({ query, variables })
-      .then(({ data }) => data);
+  actions: {
+    query: {
+      payload: {
+        query: string().required(),
+        variables: object(),
+      },
+      handler: ({ query, variables }) => {
+        return apolloClient.query({ query, variables })
+          .then(({ data }) => data);
+      },
+    },
+    mutate: {
+      payload: {
+        query: string().required(),
+        variables: object(),
+      },
+      handler: ({ query, variables }) => {
+        return apolloClient.mutate({ mutation: query, variables })
+          .then(({ data }) => data);
+      },
+    },
   },
 });
 ```
@@ -152,16 +166,17 @@ import { apolloPersistor } from '../persistors/apolloPersistor';
  * Create an instance from the persistor, this will contain the common
  * request information (such as a GraphQL query).
  */
-const meInstance = apolloPersistor.instance({
-  map: () => ({
+const meQueryAction = apolloPersistor.instance.query({
+  map: ({ variables }) => ({
     query: `
       query($id: String) {
         me(id: $id) { name }
       }
     `,
+    variables,
   }),
   scopes: {
-    user: true
+    user: true,
   },
 });
 
@@ -173,17 +188,26 @@ const MyProfile = ({ id }) => {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState(null);
   
+  /**
+   * By passing everything in via an object, you get the following benefits:
+   * 1. Unsubscribe from all functions on unwatch (avoid memory leaks)
+   * 2. Get to pick and choose which functions to use where.
+   */
   useEffect(() => {
-    const unwatch = meInstance.watch(({ data, loading, error }) => {
-        setError(error);
-        setLoading(loading);
-        setData(data);
-      });
+    const unwatch = meQueryAction.watch({
+      done: data => setData(data),
+      catch: error => setError(error),
+      status: loading => setLoading(loading),
+    });
     return () => unwatch();
   }, []); // fire only on mount and unmount (empty array)
 
+  /**
+   * Executions are seperated from results so that it's
+   * easy to refresh without extra code.
+   */
   useEffect(() => {
-    meInstance.execute({
+    meQueryAction.execute({
       variables: { id },
     });
   }, [id]); // fire only when id changes
@@ -382,7 +406,7 @@ import { Theme } from 'lumbridge';
  * Create a group of CSS properties and add some potential mutations.
  */
 const paddings = Theme.create({
-  defaults: { padding: '14px' },
+  base: { padding: '14px' },
   mutations: {
     tiny: { padding: '16px' },
     small: { padding: '16px' },
@@ -395,7 +419,7 @@ const paddings = Theme.create({
  * Groups of multiple properties can be created as well.
  */
 const fonts = Theme.create({
-  defaults: {
+  base: {
     lineHeight: '1.15',
     fontFamily: 'inherit',
     fontSize: '100%',
@@ -414,12 +438,10 @@ const fonts = Theme.create({
     },
   },
   actions: {
-    deactivate: ({ use }) => ({ deactivate }) => {
-      return use({
-        active: !deactivate,
-        mono: deactivate,
-      }),
-    };
+    deactivate: ({ deactivate }) => ({
+      active: !deactivate,
+      mono: deactivate,
+    }),
   },
 });
 ```
@@ -435,11 +457,18 @@ import config from '../config';
 /**
  * Create a styled React component with your themes.
  */
-const Wrap = Theme.combo({
+const StyledComponent = Theme.compose({
   as: 'div',
   theme: [
-    paddings.use({ tiny: config.compressed ? true : false }),
-    fonts.use({ primary: true }),
+    paddings,
+    fonts.add({
+      mutations: {
+        primary: config.compressed ? true : false,
+      },
+      actions: {
+        deactivate: true,
+      },
+    }),
   ],
   extra: {
     backgroundColor: 'green',
@@ -450,12 +479,12 @@ const Wrap = Theme.combo({
  * Use the styled react component like normal, or get create an element
  * directly from the theme.
  */
-const StyledComponent = ({ active }) => (
-  <Wrap active={active}>
-    <fonts.Instance as="span" mutation="mono">
+const HelloWorld = ({ active }) => (
+  <StyledComponent active={active}>
+    <fonts.Instance as="span" mutations={{ mono: true }}>
       Hello world!
     </fonts.Instance>
-  </Wrap>
+  </StyledComponent>
 );
 ```
 

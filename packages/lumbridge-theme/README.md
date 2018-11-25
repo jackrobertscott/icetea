@@ -26,47 +26,68 @@ const theme = Theme.create({
 });
 ```
 
-## Examples
+## API
 
-Problems being addressed:
+### Config
 
-- A group of styles is often used multiple times.
-- Component reuse carries too many styles across, where as this would carry only the exact amount of styles across.
-- Handles different property changes and how they relate to styles.
+Each theme is configured with a `config` object:
 
 ```js
-/**
- * Define styles with a single property...
- */
-const padding = Theme.create({
-  defaults: { padding: '14px' },
-  mutations: {
-    tiny: { padding: '16px' },
-    small: { padding: '16px' },
-    medium: { padding: '16px' },
-    big: { padding: '16px' }
+const theme = Theme.create(config);
+```
+
+This config object will contain all the information required by the theme.
+
+#### `config.base`
+
+Type: `object`
+
+A group of base styles which will applied when this theme is used.
+
+```js
+const fonts = Theme.create({
+  base: {
+    // styles...
   },
 });
+```
 
-/**
- * Define styles with multiple properties...
- */
-const font = Theme.create({
-  defaults: {
-    lineHeight: '1.15',
-    fontFamily: 'inherit',
-    fontSize: '100%',
-    fontWeight: 'normal',
+Example:
+
+```js
+const fonts = Theme.create({
+  base: {
+    fontSize: '14px',
+    lineHeight: '1.5em',
   },
-  /**
-   * We should initially start with these properties only as
-   * strings. This is because it promotes good coding practice
-   * by reducing complexity in the code and will cause less
-   * confusion when coding.
-   */
+});
+```
+
+Properties:
+
+- `[cssProperty]` [string]: add multiple css properties which are in camelCase as opposed to kebab-case (which is what CSS uses).
+
+#### `config.mutations`
+
+Type: `object`
+
+A set of mutations to the base CSS styles which are applied only when they are needed.
+
+```js
+const fonts = Theme.create({
+  mutations: {
+    // code...
+  },
+});
+```
+
+Example:
+
+```js
+const fonts = Theme.create({
   mutations: {
     primary: {
-      fontSize: '20px'
+      fontSize: '20px',
       fontWeight: 'bold',
     },
     mono: {
@@ -74,53 +95,187 @@ const font = Theme.create({
     },
     active: {
       color: 'blue',
-    }
+    },
   },
-  /**
-   * Instead, use functions down here in this section which can
-   * help set groups of styles on an item which can be
-   * changed by it's properties.
-   */
+});
+```
+
+Properties:
+
+- `[mutationName][cssProperty]` [string]: similar to the `base` property, name your mutations and then provide them CSS variables.
+
+#### `config.actions`
+
+Type: `object`
+
+A set of methods which can take React element props and combine them with mutations to turn those mutations on and off.
+
+```js
+const fonts = Theme.create({
   actions: {
-    active: style => ({ active }) => style.mutation({
-      active,
-      mono: !active,
-    }),
-  }
-});
-
-/**
- * Compile styles into a component on the page.
- */
-const Wrap = Element.create({
-  as: 'div',
-  /**
-   * TODO: these need thought, is this best way?
-   * Using props instead of functions forces refactoring into the
-   * actual style (which can be a good thing) but it might be bad?
-   * Is it a bad thing? Maybe it's a great thing?
-   */
-  theme: [
-    font,
-    padding.mutation.big,
-    font.action.active,
-  ],
-  style: {
-    backgroundColor: 'green',
+    // code...
   },
 });
+```
 
-/**
- * Use the styles in multiple different ways.
- */
-const StyledComponent = ({ active }) => (
-  <Wrap active={active}>
-    <font.Element as="span" mutation="mono">
-      Hello world!
-    </font.Element>
-  </Wrap>
+Example:
+
+```js
+const fonts = Theme.create({
+  mutations: {
+    mono: {
+      fontFamily: 'monospace',
+    },
+    active: {
+      color: 'blue',
+    },
+  },
+  actions: {
+    deactivate: ({ deactivate }) => ({
+      active: !deactivate,
+      mono: deactivate,
+    }),
+  },
+});
+```
+
+Properties:
+
+- `[actionName]` [func]: a function which recieves props as the first argument and should return a set of mutation names with boolean values relating to if those mutations should be on or off.
+
+### Elements
+
+To use our themes, we can **compose** them into a React element.
+
+```js
+const StyledComponent = Theme.compose(composeConfig);
+```
+
+Notice the difference between `Theme.create` and `Theme.compose` which both have seperate functions.
+
+#### `composeConfig.as`
+
+Type: `string` | `node`
+
+This will be the type of node that will be used to apply the styles to.
+
+```js
+const StyledComponent = Theme.compose({
+  as: 'div',
+});
+```
+
+#### `composeConfig.theme`
+
+Type: `array`
+
+This is an array of the themes which will be used to compose the visuals of the component.
+
+```js
+const StyledComponent = Theme.compose({
+  theme: [
+    // themes...
+  ],
+});
+```
+
+Example:
+
+```js
+const StyledComponent = Theme.compose({
+  theme: [
+    paddings,
+    fonts.add({
+      mutations: {
+        primary: config.compressed ? true : false,
+      },
+      actions: {
+        deactivate: true,
+      },
+    }),
+  ],
+});
+```
+
+As you can see, the entries to the array can be just the theme itself (e.g. `paddings`) or it can specify the mutations and actions you wish to use from the theme (e.g. `fonts.add({})`).
+
+**Note:** the `add` method accepts `mutations` and `actions` as properties. These properties should be objects which specify the mutation or action to use and a boolean value of wether to include them or not (see the example).
+
+#### `composeConfig.extra`
+
+Type: `object`
+
+This is a group of CSS properties which are can be used to add extra styling to the component when the themes are not enough.
+
+```js
+const StyleComponent = Theme.compose({
+  extra: {
+    // css...
+  },
+});
+```
+
+Example:
+
+```js
+const StyleComponent = Theme.compose({
+  extra: {
+    backgroundColor: 'green',
+    boxShadow: '0 3px 5px rgba(0, 0, 0, 0.3)',
+  },
+});
+```
+
+Properties:
+
+- `[cssProperty]` [string]: add multiple css properties which are in camelCase as opposed to kebab-case (which is what CSS uses).
+
+### Usage
+
+To use the themes, simply use the component that is created by the `Theme.compose` method in your normal React code.
+
+```js
+const Wrap = Theme.compose({
+  as: 'div',
+  theme: [
+    fonts.add({
+      actions: {
+        deactivate: true,
+      },
+    }),
+  ]
+});
+
+const HelloWorld = ({ isActive }) => (
+  <Wrap deactivate={!isActive}>
+    <span>Hello world!</span>
+  <Wrap>
 );
 ```
+
+In the above example, the `deactivate` property which is set on the `Wrap` element can be used by any actions which were added to the theme.
+
+#### `theme.Instance`
+
+Type: `node`
+
+You can quickly create an insance of a theme as a react element with the `theme.Instance` property.
+
+```js
+const HelloWorld = ({ isActive }) => (
+  <div>
+    <fonts.Instance
+      mutations={{ mono: true }}
+      actions={{ active: true }}
+      deactivate={!isActive}
+    >
+      Hello world!
+    </fonts.Instance>
+  </div>
+);
+```
+
+You can see the `mutations` and `actions` properties on the element should correspond to the properties in the `theme.add` method (as shown in above docs).
 
 ## Packages
 

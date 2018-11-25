@@ -26,125 +26,65 @@ const persistor = Persistor.create({
 });
 ```
 
-## Examples
+## API
 
-Problems being addressed:
+### Config
 
-- Purely acts as an interface for asynchronous data requests.
-- Not specific to a technology such as REST, GraphQL, LocalStorage, etc.
-- Handles keeping different data in-sync across app nicely with scopes.
-- Efficiently allows multiple instances to access the same data without overhead.
+Each persistor is configured with a `config` object:
 
 ```js
-import apolloClient from '../client'; // apollo client instance
-
-const apolloPersistor = Persistor.create({
-  /**
-   * These are validations for the handler payload so that we
-   * can find our potential errors before they happen.
-   */
-  validations: {
-    query: Yup.string().isRequired,
-    variables: Yup.object(),
-  },
-  /**
-   * This handles the payload request.
-   */
-  handler: ({ done, catch }) => payload => {
-    const { query, variables } = payload;
-    return apolloClient.query({ query, variables })
-      .then(({ data }) => data);
-  },
-});
-
-/**
- * This will execute the handler and update the data.
- */
-const meInstance = apolloPersistor.instance({
-  map: ({ variables }) => {
-    query: `
-      query {
-        me { name }
-      }
-    `,
-    variables,
-  },
-  /**
-   * SCOPES!
-   *
-   * Whenever a query is executed and has a scope, all the other
-   * interfaces with the same scope will be REFRESHED. This keeps
-   * our data nicely in sync across the app. :)
-   */
-  scopes: {
-    user: true
-  },
-});
-
-/**
- * Subscriptions to the data are seperately handled so that we don't
- * have to keep redefining this every time we want to update the
- * execution e.g. on a search with pings every 300ms.
- *
- * This also gives us the advantage of calling the watch function
- * from files which don't call the execute function (such as error
- * handling files).
- */
-meInstance.watch(({ data, error, loading }) => {
-  console.log(data, error, loading);
-});
-
-/**
- * BAD.
- *
- * Don't implement "seperate calls" as this will require memory leakage
- * if the unwatching calls are not correctly handled (which requires
- * a lot of code)...
- *
- * const unwatchData = meInstance.data(handleData);
- * const unwatchLoading = meInstance.loading(handleLoading);
- * const unwatchError = meInstance.catch(handleError);
- */
-
-/**
- * Example usage in a component with lifecycle and unwatching.
- */
-const MyProfile = () => {
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [data, setData] = useState(null);
-  
-  /**
-   * Notice the empty array at the end. This will only fire when
-   * the component mounts and unmounts - not inbetween.
-   */
-  useEffect(() => {
-    const unwatch = meInstance.watch(({ data, loading, error }) => {
-        setData(data);
-        setLoading(loading);
-        setError(error);
-      });
-    return () => unwatch();
-  }, []);
-
-  /**
-   * Notice that this effect will refresh the query on a new id.
-   */
-  useEffect(() => {
-    meInstance.execute({
-      variables: { id },
-    });
-  }, [id]);
-
-  return (
-    <div>
-      {data.me.name}
-      {error && error.message}
-      {loading}
-    </div>
-  );
-};
+const persistor = Persistor.create(config);
 ```
+
+This config object will contain all the information required by the persistor.
+
+#### `config.actions`
+
+Type: `object`
+
+A set of methods which provide an common interface for interacting with a data source.
+
+```js
+const serverPersistor = Persistor.create({
+  actions: {
+    // routes...
+  },
+});
+```
+
+Example:
+
+```js
+const serverPersistor = Persistor.create({
+  actions: {
+    query: {
+      payload: {
+        query: string().required(),
+        variables: object(),
+      },
+      handler: ({ query, variables }) => {
+        return graphQLClient.query({ query, variables })
+          .then(({ data }) => data);
+      },
+    },
+    mutate: {
+      payload: {
+        query: string().required(),
+        variables: object(),
+      },
+      handler: ({ query, variables }) => {
+        return graphQLClient.mutate({ mutation: query, variables })
+          .then(({ data }) => data);
+      },
+    },
+  },
+});
+```
+
+Properties:
+
+- `[actionName].payload` [object]: a set of validations used to check that the payload is the correct shape and type.
+- `[actionName].handler` [func]: the executed function which handles
 
 ## Packages
 
