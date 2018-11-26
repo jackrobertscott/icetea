@@ -23,5 +23,13 @@
     "mocha": "^5.2.0",
     "ts-node": "^7.0.1",
     "typescript": "^3.1.6"
+  },
+  "dependencies": {
+    "@types/history": "^4.7.2",
+    "@types/path-to-regexp": "^1.7.0",
+    "@types/react": "^16.7.7",
+    "history": "^4.7.2",
+    "path-to-regexp": "^2.4.0",
+    "react": "^16.6.3"
   }
 }
