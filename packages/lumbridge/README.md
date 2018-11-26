@@ -31,7 +31,7 @@ const router = Router.create({
 ### Persistor
 
 ```js
-import { Persistor } from 'lumbridge';
+import { Persistor, Scope } from 'lumbridge';
 
 const persistor = Persistor.create({
   // code...
