@@ -11,11 +11,17 @@
     "README.md"
   ],
   "scripts": {
+    "test": "mocha -r ts-node/register src/**/*.test.ts",
     "build": "yarn run clean && yarn run compile",
     "clean": "rm -rf lib",
     "compile": "tsc"
   },
   "devDependencies": {
+    "@types/chai": "^4.1.7",
+    "@types/mocha": "^5.2.5",
+    "chai": "^4.2.0",
+    "mocha": "^5.2.0",
+    "ts-node": "^7.0.1",
     "typescript": "^3.1.6"
   }
 }
