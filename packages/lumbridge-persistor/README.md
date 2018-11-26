@@ -40,9 +40,8 @@ This config object will contain all the information required by the persistor.
 
 #### `config.actions`
 
-Type: `object`
-
-Required: `true`
+- Type: `object`
+- Required: `true`
 
 A set of methods which provide an common interface for interacting with a data source.
 
@@ -90,9 +89,8 @@ Properties:
 
 #### `persistor.map[actionName]`
 
-Type: `func`
-
-Returns: `persistorAction`
+- Type: `func`
+- Returns: `persistorAction`
 
 Create a persistor action with more specific properties to the method being called.
 
@@ -113,8 +111,8 @@ const meQueryAction = serverPersistor.map.query(({ variables }) => ({
 
 #### `persistorAction.execute`
 
-Type: `func`
-Returns: `void`
+- Type: `func`
+- Returns: `void`
 
 Execute the persistor action with parameters (which you specify).
 
@@ -128,9 +126,8 @@ meQueryAction.execute({
 
 #### `persistorAction.watch`
 
-Type: `func`
-
-Returns: `unwatch`
+- Type: `func`
+- Returns: `unwatch`
 
 Listen to any updates in the persistor as the persistor instance executes.
 
