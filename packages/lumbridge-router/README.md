@@ -40,7 +40,8 @@ This config object will contain all the information required by the router.
 
 #### `config.routes`
 
-Type: `object`
+- Type: `object`
+- Required: `true`
 
 A collection of routes which may be rendered by the router relative to the app's url.
 
@@ -96,7 +97,8 @@ Rules:
 
 #### `config.change`
 
-Type: `object`
+- Type: `object`
+- Required: `false`
 
 A collection of handlers which will be called when the router renders a new route.
 
@@ -126,7 +128,8 @@ Properties:
 
 #### `config.nomatch`
 
-Type: `object`
+- Type: `object`
+- Required: `false`
 
 These values are used when *no* routes are matched by the routes.
 
@@ -156,7 +159,7 @@ Properties:
 
 #### `router.Routes`
 
-Type: `node` (React component)
+- Type: `node` (React component)
 
 A React component which is used to display the routes in the DOM.
 

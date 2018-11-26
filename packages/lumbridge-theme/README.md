@@ -40,7 +40,8 @@ This config object will contain all the information required by the theme.
 
 #### `config.base`
 
-Type: `object`
+- Type: `object`
+- Required: `false`
 
 A group of base styles which will applied when this theme is used.
 
@@ -69,7 +70,8 @@ Properties:
 
 #### `config.mutations`
 
-Type: `object`
+- Type: `object`
+- Required: `false`
 
 A set of mutations to the base CSS styles which are applied only when they are needed.
 
@@ -106,7 +108,8 @@ Properties:
 
 #### `config.actions`
 
-Type: `object`
+- Type: `object`
+- Required: `false`
 
 A set of methods which can take React element props and combine them with mutations to turn those mutations on and off.
 
@@ -158,7 +161,8 @@ Notice the difference between `Theme.create` and `Theme.compose` which both have
 
 #### `composeConfig.as`
 
-Type: `string` | `node`
+- Type: `string` | `node`
+- Required: `true`
 
 This will be the type of node that will be used to apply the styles to.
 
@@ -170,7 +174,8 @@ const StyledComponent = Theme.compose({
 
 #### `composeConfig.theme`
 
-Type: `array`
+- Type: `array`
+- Required: `true`
 
 This is an array of the themes which will be used to compose the visuals of the component.
 
@@ -206,7 +211,8 @@ As you can see, the entries to the array can be just the theme itself (e.g. `pad
 
 #### `composeConfig.extra`
 
-Type: `object`
+- Type: `object`
+- Required: `false`
 
 This is a group of CSS properties which are can be used to add extra styling to the component when the themes are not enough.
 
@@ -260,7 +266,7 @@ In the above example, the `deactivate` property which is set on the `Wrap` eleme
 
 #### `theme.Instance`
 
-Type: `node`
+- Type: `node`
 
 You can quickly create an insance of a theme as a react element with the `theme.Instance` property.
 

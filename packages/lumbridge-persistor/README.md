@@ -141,7 +141,7 @@ const unwatch = meQueryAction.watch({
 const componentWillUnmount = () => unwatch();
 ```
 
-**Note:** the `watch` function will listen to any updates. However, to make sure that you don't have a memory leak, it's important to run the `unwatch` function when the listeners are no longer needed.
+**Note:** when you start watching a persistor action, don't forget to call the `unwatch` function when the component unmounts and you stop listening for changes (see above code). If you don't unwatch, then you might cause a memory leak.
 
 ## Packages
 

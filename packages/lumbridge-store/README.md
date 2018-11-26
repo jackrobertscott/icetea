@@ -40,7 +40,8 @@ This config object will contain all the information required by the store.
 
 #### `config.schema`
 
-Type: `object`
+- Type: `object`
+- Required: `true`
 
 Describes the shape of the state object and can optionally set validations on that shape.
 
@@ -87,7 +88,8 @@ Properties:
 
 #### `config.actions`
 
-Type: `object`
+- Type: `object`
+- Required: `false`
 
 The actions object is used for more complex state manipulation functions. However, you do not need to use this in order to use the store.
 
@@ -123,7 +125,8 @@ Properties:
 
 #### `store.update`
 
-Type: `func`
+- Type: `func`
+- Returns: `void`
 
 Make a partial update to the values of the store.
 
@@ -151,7 +154,8 @@ store.update({
 
 #### `store.dispatch[actionName]`
 
-Type: `func`
+- Type: `func`
+- Returns: `void`
 
 To improve code reuse and encourage refactoring of your code, actions let you update multiple state values in one go.
 
@@ -178,7 +182,8 @@ Notice how the `doSomething` action is being set in `actions` and then is being 
 
 #### `store.watch`
 
-Type: `func`
+- Type: `func`
+- Returns: `unwatch`
 
 Pass a listener function into this in order to get informative updates on changes in the store.
 
@@ -197,7 +202,7 @@ const componentWillUnmount = () => unwatch();
 
 #### `store.state`
 
-Type: `object`
+- Type: `object`
 
 This property gives you access to the current values of the store.
 
@@ -222,7 +227,7 @@ The above code will only allow the use to access the home page when they are log
 
 #### `store.errors`
 
-Type: `object`
+- Type: `object`
 
 This property gives you access to any errors between the state and the validators.
 
