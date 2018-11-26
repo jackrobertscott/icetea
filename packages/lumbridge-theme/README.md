@@ -106,7 +106,7 @@ Properties:
 
 - `[mutationName][cssProperty]` [string]: similar to the `base` property, name your mutations and then provide them CSS variables.
 
-#### `config.actions`
+#### `config.combos`
 
 - Type: `object`
 - Required: `false`
@@ -115,7 +115,7 @@ A set of methods which can take React element props and combine them with mutati
 
 ```js
 const fonts = Theme.create({
-  actions: {
+  combos: {
     // code...
   },
 });
@@ -136,7 +136,7 @@ const fonts = Theme.create({
       color: 'blue',
     },
   },
-  actions: {
+  combos: {
     deactivate: ({ deactivate }) => ({
       active: !deactivate,
       mono: deactivate,
@@ -147,7 +147,7 @@ const fonts = Theme.create({
 
 Properties:
 
-- `[actionName]` [func]: a function which recieves props as the first argument and should return a set of mutation names with boolean values relating to if those mutations should be on or off.
+- `[comboName]` [func]: a function which recieves props as the first argument and should return a set of mutation names with boolean values relating to if those mutations should be on or off.
 
 ### Elements
 
@@ -197,7 +197,7 @@ const StyledComponent = Theme.compose({
       mutations: {
         primary: config.compressed ? true : false,
       },
-      actions: {
+      combos: {
         deactivate: true,
       },
     }),
@@ -205,9 +205,9 @@ const StyledComponent = Theme.compose({
 });
 ```
 
-As you can see, the entries to the array can be just the theme itself (e.g. `paddings`) or it can specify the mutations and actions you wish to use from the theme (e.g. `fonts.add({})`).
+As you can see, the entries to the array can be just the theme itself (e.g. `paddings`) or it can specify the mutations and combos you wish to use from the theme (e.g. `fonts.add({})`).
 
-**Note:** the `add` method accepts `mutations` and `actions` as properties. These properties should be objects which specify the mutation or action to use and a boolean value of wether to include them or not (see the example).
+**Note:** the `add` method accepts `mutations` and `combos` as properties. These properties should be objects which specify the mutation or combo to use and a boolean value of wether to include them or not (see the example).
 
 #### `composeConfig.extra`
 
@@ -248,7 +248,7 @@ const Wrap = Theme.compose({
   as: 'div',
   theme: [
     fonts.add({
-      actions: {
+      combos: {
         deactivate: true,
       },
     }),
@@ -262,7 +262,7 @@ const HelloWorld = ({ isActive }) => (
 );
 ```
 
-In the above example, the `deactivate` property which is set on the `Wrap` element can be used by any actions which were added to the theme.
+In the above example, the `deactivate` property which is set on the `Wrap` element can be used by any combos which were added to the theme.
 
 #### `theme.Instance`
 
@@ -275,7 +275,7 @@ const HelloWorld = ({ isActive }) => (
   <div>
     <fonts.Instance
       mutations={{ mono: true }}
-      actions={{ active: true }}
+      combos={{ active: true }}
       deactivate={!isActive}
     >
       Hello world!
@@ -284,7 +284,7 @@ const HelloWorld = ({ isActive }) => (
 );
 ```
 
-You can see the `mutations` and `actions` properties on the element should correspond to the properties in the `theme.add` method (as shown in above docs).
+You can see the `mutations` and `combos` properties on the element should correspond to the properties in the `theme.add` method (as shown in above docs).
 
 ## Packages
 

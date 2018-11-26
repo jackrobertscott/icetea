@@ -430,7 +430,7 @@ const fonts = Theme.create({
       color: 'blue',
     },
   },
-  actions: {
+  combos: {
     deactivate: ({ deactivate }) => ({
       active: !deactivate,
       mono: deactivate,
@@ -458,7 +458,7 @@ const StyledComponent = Theme.compose({
       mutations: {
         primary: config.compressed ? true : false,
       },
-      actions: {
+      combos: {
         deactivate: true,
       },
     }),
