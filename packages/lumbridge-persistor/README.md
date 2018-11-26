@@ -1,6 +1,6 @@
 # lumbridge-persistor
 
-> 🏰 Improved persistant data management for React apps.
+> 🏰 React application management made simple.
 
 ## Installation
 

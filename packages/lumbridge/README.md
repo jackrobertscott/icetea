@@ -1,6 +1,6 @@
 # lumbridge
 
-> 🏰 Improved logic management for React apps.
+> 🏰 React application management made simple.
 
 ## Installation
 
@@ -18,10 +18,42 @@ yarn add lumbridge
 
 Then import the helper classes where needed.
 
+### Router
+
 ```js
 import { Router } from 'lumbridge';
 
 const router = Router.create({
+  // code...
+});
+```
+
+### Persistor
+
+```js
+import { Persistor } from 'lumbridge';
+
+const persistor = Persistor.create({
+  // code...
+});
+```
+
+### Store
+
+```js
+import { Store } from 'lumbridge';
+
+const store = Store.create({
+  // code...
+});
+```
+
+### Theme
+
+```js
+import { Theme } from 'lumbridge';
+
+const fonts = Theme.create({
   // code...
 });
 ```

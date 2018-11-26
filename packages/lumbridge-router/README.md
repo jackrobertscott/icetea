@@ -1,6 +1,6 @@
 # lumbridge-router
 
-> 🏰 Improved route management for React apps.
+> 🏰 React application management made simple.
 
 ## Installation
 

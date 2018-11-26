@@ -1,6 +1,6 @@
 # lumbridge-store
 
-> 🏰 Improved global data management for React apps.
+> 🏰 React application management made simple.
 
 ## Installation
 

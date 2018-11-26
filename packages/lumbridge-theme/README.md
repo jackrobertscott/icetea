@@ -1,6 +1,6 @@
 # lumbridge-theme
 
-> 🏰 Improved theme management for React apps.
+> 🏰 React application management made simple.
 
 ## Installation
 
