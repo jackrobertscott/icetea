@@ -41,6 +41,7 @@ This config object will contain all the information required by the persistor.
 #### `config.actions`
 
 Type: `object`
+Required: true
 
 A set of methods which provide an common interface for interacting with a data source.
 
@@ -89,8 +90,9 @@ Properties:
 #### `persistor.map[actionName]`
 
 Type: `func`
+Returns: `persistorAction`
 
-Create a persistor instance with more specific properties to the method being called.
+Create a persistor action with more specific properties to the method being called.
 
 ```js
 const serverPersistor = Persistor.create(config);
@@ -105,11 +107,14 @@ const meQueryAction = serverPersistor.map.query(({ variables }) => ({
 }));
 ```
 
-#### `persistorInstance.execute`
+**Note:** the callback provided is used to map the variables passed to the `meQueryAction.execute` function to the handler payload.
+
+#### `persistorAction.execute`
 
 Type: `func`
+Returns: `void`
 
-Get the action to execute (with optionally passed in variables).
+Execute the persistor action with parameters (which you specify).
 
 ```js
 meQueryAction.execute({
@@ -117,9 +122,12 @@ meQueryAction.execute({
 });
 ```
 
-#### `persistorInstance.watch`
+**Note:** by seperating the functionality of *executing* an action and *receiving* that action's data, it enables you to more efficiently re-query the data without the code overhead. A good example would be when you wish to load a list of items that will change based upon a search filter. The list can be requeried easily while you only have to handle how that data is handled only once.
+
+#### `persistorAction.watch`
 
 Type: `func`
+Returns: `unwatch`
 
 Listen to any updates in the persistor as the persistor instance executes.
 
@@ -132,6 +140,8 @@ const unwatch = meQueryAction.watch({
 
 const componentWillUnmount = () => unwatch();
 ```
+
+**Note:** the `watch` function will listen to any updates. However, to make sure that you don't have a memory leak, it's important to run the `unwatch` function when the listeners are no longer needed.
 
 ## Packages
 
