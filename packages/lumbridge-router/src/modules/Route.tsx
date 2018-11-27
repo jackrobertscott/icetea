@@ -61,10 +61,9 @@ export default class Route extends React.Component<IRouteProps, IRouteState> {
   }
 
   public render() {
-    const { history, nomatch } = this.props;
     const { location, currentRoute } = this.state;
     if (!currentRoute) {
-      return <React.Fragment />;
+      return this.routeless();
     }
     let enterable = true;
     if (currentRoute.enter && typeof currentRoute.enter.before === 'function') {
@@ -74,10 +73,7 @@ export default class Route extends React.Component<IRouteProps, IRouteState> {
       }
     }
     if (!enterable) {
-      if (nomatch && nomatch.redirect) {
-        history.replace(nomatch.redirect);
-      }
-      return null;
+      return this.routeless();
     }
     return (
       <EventsRoute
@@ -86,5 +82,13 @@ export default class Route extends React.Component<IRouteProps, IRouteState> {
         after={currentRoute.enter && currentRoute.enter.after}
       />
     );
+  }
+
+  private routeless() {
+    const { history, nomatch } = this.props;
+    if (nomatch && nomatch.redirect) {
+      history.replace(nomatch.redirect);
+    }
+    return <React.Fragment />;
   }
 }
