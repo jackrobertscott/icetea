@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { matchPath } from '../utils/path';
 import history from '../utils/history';
+import Route from './Route';
 
 interface IEvents {
   before: () => Promise<any>;
@@ -15,7 +16,7 @@ interface IRouteOptions {
   after?: IEvents;
 }
 
-interface IRoute extends IRouteOptions {
+export interface IRoute extends IRouteOptions {
   name: string;
 }
 
@@ -50,6 +51,10 @@ export default class Router {
     this.routes = this.setupRoutes();
   }
 
+  public router(): React.ReactNode {
+    return () => <Route currentRoute={this.currentRoute} history={history} />;
+  }
+
   private setupRoutes(): IRoute[] {
     return Object.keys(this.config.routes)
       .map(name => ({
@@ -67,7 +72,7 @@ export default class Router {
       });
   }
 
-  private currentRoute() {
+  private currentRoute = (): IRoute | null => {
     const filteredRoutes = (this.routes as any[]).filter((route: IRoute) => {
       return matchPath({
         currentPath: history.location.pathname,
@@ -75,10 +80,5 @@ export default class Router {
       });
     });
     return filteredRoutes.length ? filteredRoutes[0] : null;
-  }
-
-  get Routes(): React.ReactNode {
-    const route = this.currentRoute();
-    return route ? route.component : null;
-  }
+  };
 }

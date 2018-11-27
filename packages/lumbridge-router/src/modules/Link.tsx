@@ -8,8 +8,8 @@ interface ILinkProps {
 
 export default class Link extends React.Component<ILinkProps> {
   public render() {
-    const extraProps = this.extractLinkProps();
-    return <a {...extraProps} onClick={this.handleClick} />;
+    const { to, replace, ...extraProps } = this.props;
+    return <a {...extraProps} href={to} onClick={this.handleClick} />;
   }
 
   private handleClick = (event: any): void => {
@@ -23,10 +23,5 @@ export default class Link extends React.Component<ILinkProps> {
         history.push(to);
       }
     }
-  };
-
-  private extractLinkProps = (): object => {
-    const { to, replace, ...args } = this.props;
-    return args || {};
   };
 }

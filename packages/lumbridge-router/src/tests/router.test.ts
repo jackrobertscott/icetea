@@ -9,11 +9,5 @@ describe('Router', () => {
       });
       expect(router).to.be.instanceOf(Router);
     });
-    it('should have a "Routes" property', () => {
-      const router = Router.create({
-        routes: {},
-      });
-      expect(typeof router.Routes).to.equal('function');
-    });
   });
 });
