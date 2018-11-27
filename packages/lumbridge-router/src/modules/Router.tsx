@@ -67,13 +67,18 @@ export default class Router {
       });
   }
 
-  get Routes(): React.ReactNode {
-    const index = (this.routes as any[]).indexOf((route: IRoute) =>
-      matchPath({
+  private currentRoute() {
+    const filteredRoutes = (this.routes as any[]).filter((route: IRoute) => {
+      return matchPath({
         currentPath: history.location.pathname,
         routePath: route.path,
-      })
-    );
-    return index >= 0 ? this.routes[index].component : null;
+      });
+    });
+    return filteredRoutes.length ? filteredRoutes[0] : null;
+  }
+
+  get Routes(): React.ReactNode {
+    const route = this.currentRoute();
+    return route ? route.component : null;
   }
 }
