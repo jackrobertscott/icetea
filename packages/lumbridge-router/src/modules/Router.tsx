@@ -3,27 +3,22 @@ import { matchPath } from '../utils/path';
 import history from '../utils/history';
 import Route from './Route';
 
-interface IEvents {
+export interface IEvents {
   before: () => Promise<any>;
   after: () => Promise<any>;
 }
 
-interface IRouteOptions {
+export interface IRoute {
   path: string;
-  exact?: boolean;
   component: React.ReactNode;
+  name?: string;
+  exact?: boolean;
   enter?: IEvents;
   after?: IEvents;
 }
 
-export interface IRoute extends IRouteOptions {
-  name: string;
-}
-
-interface IConfig {
-  routes: {
-    [name: string]: IRouteOptions;
-  };
+export interface IConfig {
+  routes: IRoute[];
   change?: IEvents;
   nomatch?: {
     redirect: string;
@@ -48,28 +43,23 @@ export default class Router {
       );
     }
     this.config = config;
-    this.routes = this.setupRoutes();
+    this.routes = this.sortedRoutes();
   }
 
   public router(): React.ReactNode {
     return () => <Route currentRoute={this.currentRoute} history={history} />;
   }
 
-  private setupRoutes(): IRoute[] {
-    return Object.keys(this.config.routes)
-      .map(name => ({
-        name,
-        ...this.config.routes[name],
-      }))
-      .sort((a, b) => {
-        if (a.exact && !b.exact) {
-          return -1;
-        }
-        if (b.exact && !a.exact) {
-          return 1;
-        }
-        return b.path.split('/').length - a.path.split('/').length;
-      });
+  private sortedRoutes(): IRoute[] {
+    return this.config.routes.sort((a, b) => {
+      if (a.exact && !b.exact) {
+        return -1;
+      }
+      if (b.exact && !a.exact) {
+        return 1;
+      }
+      return b.path.split('/').length - a.path.split('/').length;
+    });
   }
 
   private currentRoute = (): IRoute | null => {

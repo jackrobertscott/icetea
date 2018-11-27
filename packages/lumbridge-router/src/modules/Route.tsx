@@ -1,18 +1,18 @@
 import * as React from 'react';
 import { IRoute } from './Router';
 
-interface IRouteProps {
+export interface IRouteProps {
   currentRoute: () => IRoute | null;
   history: {
     listen: any;
   };
 }
 
-interface IRouteState {
+export interface IRouteState {
   location: any;
 }
 
-interface ILocation {
+export interface ILocation {
   pathname: string;
   search: string;
   hash: string;

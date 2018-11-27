@@ -1,7 +1,7 @@
 import * as React from 'react';
 import history from '../utils/history';
 
-interface ILinkProps {
+export interface ILinkProps {
   to: string;
   replace?: boolean;
 }
