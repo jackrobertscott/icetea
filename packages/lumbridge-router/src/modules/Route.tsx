@@ -1,15 +1,19 @@
 import * as React from 'react';
 import { IRoute } from './Router';
+import EventsRoute from './EventsRoute';
 
 export interface IRouteProps {
-  currentRoute: () => IRoute | null;
-  history: {
-    listen: any;
+  history: any;
+  retrieveCurrentRoute: (pathname?: string) => IRoute | null;
+  nomatch?: {
+    redirect: string;
   };
 }
 
 export interface IRouteState {
   location: any;
+  currentRoute: IRoute | null;
+  lastRoute: IRoute | null;
 }
 
 export interface ILocation {
@@ -23,14 +27,22 @@ export default class Route extends React.Component<IRouteProps, IRouteState> {
 
   constructor(props: IRouteProps) {
     super(props);
+    const { location } = props.history;
     this.state = {
-      location: null,
+      location,
+      currentRoute: props.retrieveCurrentRoute(location.pathname),
+      lastRoute: null,
     };
   }
 
   public componentDidMount() {
     this.unlisten = this.props.history.listen((location: ILocation) => {
-      this.setState({ location });
+      const { currentRoute } = this.state;
+      this.setState({
+        location,
+        lastRoute: currentRoute,
+        currentRoute: this.props.retrieveCurrentRoute(location.pathname),
+      });
     });
   }
 
@@ -40,9 +52,39 @@ export default class Route extends React.Component<IRouteProps, IRouteState> {
     }
   }
 
+  public shouldComponentUpdate() {
+    const { lastRoute, currentRoute, location } = this.state;
+    return (
+      lastRoute !== currentRoute &&
+      location.pathname !== this.props.history.location.pathname
+    );
+  }
+
   public render() {
-    const CurrentRoute =
-      (this.props.currentRoute() || ({} as any)).component || React.Fragment;
-    return <CurrentRoute />;
+    const { history, nomatch } = this.props;
+    const { location, currentRoute } = this.state;
+    if (!currentRoute) {
+      return <React.Fragment />;
+    }
+    let enterable = true;
+    if (currentRoute.enter && typeof currentRoute.enter.before === 'function') {
+      const guard = currentRoute.enter.before({ location });
+      if (typeof guard === 'boolean') {
+        enterable = guard;
+      }
+    }
+    if (!enterable) {
+      if (nomatch && nomatch.redirect) {
+        history.replace(nomatch.redirect);
+      }
+      return null;
+    }
+    return (
+      <EventsRoute
+        key={currentRoute.path}
+        component={currentRoute.component}
+        after={currentRoute.enter && currentRoute.enter.after}
+      />
+    );
   }
 }

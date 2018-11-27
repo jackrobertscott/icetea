@@ -4,13 +4,13 @@ import history from '../utils/history';
 import Route from './Route';
 
 export interface IEvents {
-  before: () => Promise<any>;
-  after: () => Promise<any>;
+  before: (...args: any[]) => Promise<any>;
+  after: (...args: any[]) => Promise<any>;
 }
 
 export interface IRoute {
   path: string;
-  component: React.ReactNode;
+  component: any;
   name?: string;
   exact?: boolean;
   enter?: IEvents;
@@ -42,12 +42,18 @@ export default class Router {
         'Expected config.routes object to be given to constructor.'
       );
     }
-    this.config = config;
+    this.config = { ...config };
     this.routes = this.sortedRoutes();
   }
 
   public router(): React.ReactNode {
-    return () => <Route currentRoute={this.currentRoute} history={history} />;
+    return () => (
+      <Route
+        history={history}
+        retrieveCurrentRoute={this.currentRoute}
+        nomatch={this.config.nomatch}
+      />
+    );
   }
 
   private sortedRoutes(): IRoute[] {
@@ -62,10 +68,10 @@ export default class Router {
     });
   }
 
-  private currentRoute = (): IRoute | null => {
+  private currentRoute = (pathname?: string): IRoute | null => {
     const filteredRoutes = (this.routes as any[]).filter((route: IRoute) => {
       return matchPath({
-        currentPath: history.location.pathname,
+        currentPath: pathname || history.location.pathname,
         routePath: route.path,
       });
     });

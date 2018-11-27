@@ -14,6 +14,10 @@ export default Router.create({
     {
       path: '/faq',
       component: () => <div>FAQ Page</div>,
+      enter: {
+        before: () => console.log('enter before faq'),
+        after: () => console.log('enter after faq'),
+      },
     },
   ],
 });
