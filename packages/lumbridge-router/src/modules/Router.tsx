@@ -43,7 +43,15 @@ export default class Router {
       );
     }
     this.config = { ...config };
-    this.routes = this.sortedRoutes();
+    this.routes = this.config.routes.sort((a, b) => {
+      if (a.exact && !b.exact) {
+        return -1;
+      }
+      if (b.exact && !a.exact) {
+        return 1;
+      }
+      return b.path.split('/').length - a.path.split('/').length;
+    });
   }
 
   public render(): React.ReactNode {
@@ -56,25 +64,14 @@ export default class Router {
     );
   }
 
-  private sortedRoutes(): IRoute[] {
-    return this.config.routes.sort((a, b) => {
-      if (a.exact && !b.exact) {
-        return -1;
-      }
-      if (b.exact && !a.exact) {
-        return 1;
-      }
-      return b.path.split('/').length - a.path.split('/').length;
-    });
-  }
-
   private currentRoute = (pathname?: string): IRoute | null => {
-    const filteredRoutes = (this.routes as any[]).filter((route: IRoute) => {
-      return matchPath({
-        currentPath: pathname || history.location.pathname,
-        routePath: route.path,
-      });
-    });
-    return filteredRoutes.length ? filteredRoutes[0] : null;
+    return (
+      (this.routes as any[]).filter((route: IRoute) => {
+        return matchPath({
+          currentPath: pathname || history.location.pathname,
+          routePath: route.path,
+        });
+      })[0] || null
+    );
   };
 }
