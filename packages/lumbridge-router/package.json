@@ -6,6 +6,7 @@
   "author": "Jack Scott <jack.rob.scott@gmail.com>",
   "license": "MIT",
   "main": "lib/index.js",
+  "source": "src/index.js",
   "files": [
     "lib",
     "README.md"
@@ -15,14 +16,6 @@
     "build": "yarn run clean && yarn run compile",
     "clean": "rm -rf lib",
     "compile": "tsc"
-  },
-  "devDependencies": {
-    "@types/chai": "^4.1.7",
-    "@types/mocha": "^5.2.5",
-    "chai": "^4.2.0",
-    "mocha": "^5.2.0",
-    "ts-node": "^7.0.1",
-    "typescript": "^3.1.6"
   },
   "dependencies": {
     "@types/history": "^4.7.2",
