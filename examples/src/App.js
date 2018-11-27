@@ -3,7 +3,7 @@ import { Link } from 'lumbridge-router';
 import Main from './layouts/Main';
 import mainRouter from './routes/mainRouter';
 
-const Router = mainRouter.render();
+const Routes = mainRouter.routes();
 
 export default () => (
   <Main>
@@ -19,6 +19,6 @@ export default () => (
       </Link>
     </nav>
     <hr />
-    <Router />
+    <Routes />
   </Main>
 );

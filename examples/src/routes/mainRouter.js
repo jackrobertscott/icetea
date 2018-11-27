@@ -2,6 +2,13 @@ import React from 'react';
 import { Router } from 'lumbridge-router';
 
 export default Router.create({
+  change: {
+    before: () => console.log('before change'),
+    after: () => console.log('after change'),
+  },
+  nomatch: {
+    redirect: '/',
+  },
   routes: [
     {
       path: '/',
@@ -15,8 +22,8 @@ export default Router.create({
       path: '/faq',
       component: () => <div>FAQ Page</div>,
       enter: {
-        before: () => console.log('enter before faq'),
-        after: () => console.log('enter after faq'),
+        before: () => console.log('> enter before faq') || false,
+        after: () => console.log('< enter after faq'),
       },
     },
   ],

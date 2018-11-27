@@ -1,11 +1,11 @@
 import * as React from 'react';
-import { matchPath } from '../utils/path';
-import history from '../utils/history';
+import { matchPath, compareRoutePaths } from '../utils/path';
+import history, { ILocation } from '../utils/history';
 import Route from './Route';
 
 export interface IEvents {
-  before: (...args: any[]) => Promise<any>;
-  after: (...args: any[]) => Promise<any>;
+  before: (options: { location: ILocation }) => boolean | void;
+  after: (options: { location: ILocation }) => void;
 }
 
 export interface IRoute {
@@ -31,7 +31,7 @@ export default class Router {
   }
 
   protected config: IConfig;
-  protected routes: IRoute[];
+  protected sortedRoutes: IRoute[];
 
   constructor(config: IConfig) {
     if (!config) {
@@ -43,22 +43,16 @@ export default class Router {
       );
     }
     this.config = { ...config };
-    this.routes = this.config.routes.sort((a, b) => {
-      if (a.exact && !b.exact) {
-        return -1;
-      }
-      if (b.exact && !a.exact) {
-        return 1;
-      }
-      return b.path.split('/').length - a.path.split('/').length;
-    });
+    this.sortedRoutes = this.config.routes.sort(compareRoutePaths);
   }
 
-  public render(): React.ReactNode {
+  public routes(): React.ReactNode {
+    console.log(this.config.change);
     return () => (
       <Route
         history={history}
         retrieveCurrentRoute={this.currentRoute}
+        change={this.config.change}
         nomatch={this.config.nomatch}
       />
     );
@@ -66,7 +60,7 @@ export default class Router {
 
   private currentRoute = (pathname?: string): IRoute | null => {
     return (
-      (this.routes as any[]).filter((route: IRoute) => {
+      (this.sortedRoutes as any[]).filter((route: IRoute) => {
         return matchPath({
           currentPath: pathname || history.location.pathname,
           routePath: route.path,

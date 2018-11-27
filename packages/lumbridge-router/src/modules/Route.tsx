@@ -1,10 +1,12 @@
 import * as React from 'react';
-import { IRoute } from './Router';
+import { IRoute, IEvents } from './Router';
 import EventsRoute from './EventsRoute';
+import { ILocation } from '../utils/history';
 
 export interface IRouteProps {
   history: any;
   retrieveCurrentRoute: (pathname?: string) => IRoute | null;
+  change?: IEvents;
   nomatch?: {
     redirect: string;
   };
@@ -14,12 +16,6 @@ export interface IRouteState {
   location: any;
   currentRoute: IRoute | null;
   lastRoute: IRoute | null;
-}
-
-export interface ILocation {
-  pathname: string;
-  search: string;
-  hash: string;
 }
 
 export default class Route extends React.Component<IRouteProps, IRouteState> {
@@ -37,12 +33,15 @@ export default class Route extends React.Component<IRouteProps, IRouteState> {
 
   public componentDidMount() {
     this.unlisten = this.props.history.listen((location: ILocation) => {
-      const { currentRoute } = this.state;
-      this.setState({
-        location,
-        lastRoute: currentRoute,
-        currentRoute: this.props.retrieveCurrentRoute(location.pathname),
-      });
+      const oldRoute = this.state.currentRoute;
+      const newRoute = this.props.retrieveCurrentRoute(location.pathname);
+      if (oldRoute !== newRoute) {
+        this.setState({
+          location,
+          lastRoute: oldRoute,
+          currentRoute: newRoute,
+        });
+      }
     });
   }
 
@@ -52,43 +51,56 @@ export default class Route extends React.Component<IRouteProps, IRouteState> {
     }
   }
 
-  public shouldComponentUpdate() {
-    const { lastRoute, currentRoute, location } = this.state;
-    return (
-      lastRoute !== currentRoute &&
-      location.pathname !== this.props.history.location.pathname
-    );
-  }
-
   public render() {
-    const { location, currentRoute } = this.state;
+    const { currentRoute } = this.state;
     if (!currentRoute) {
-      return this.routeless();
+      return this.nomatchRoute();
     }
-    let enterable = true;
-    if (currentRoute.enter && typeof currentRoute.enter.before === 'function') {
-      const guard = currentRoute.enter.before({ location });
-      if (typeof guard === 'boolean') {
-        enterable = guard;
-      }
+    if (!this.runBeforeHooks(currentRoute)) {
+      return this.nomatchRoute();
     }
-    if (!enterable) {
-      return this.routeless();
-    }
+    const after = () => this.runAfterHooks(currentRoute);
     return (
       <EventsRoute
         key={currentRoute.path}
         component={currentRoute.component}
-        after={currentRoute.enter && currentRoute.enter.after}
+        after={after}
       />
     );
   }
 
-  private routeless() {
+  private nomatchRoute() {
     const { history, nomatch } = this.props;
     if (nomatch && nomatch.redirect) {
       history.replace(nomatch.redirect);
     }
     return <React.Fragment />;
+  }
+
+  private runBeforeHooks(route: IRoute): boolean {
+    const { change } = this.props;
+    const { location } = this.state;
+    if (change && typeof change.before === 'function') {
+      if (change.before({ location }) === false) {
+        return false;
+      }
+    }
+    if (route.enter && typeof route.enter.before === 'function') {
+      if (route.enter.before({ location }) === false) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private runAfterHooks(route: IRoute): void {
+    const { change } = this.props;
+    const { location } = this.state;
+    if (route.enter && typeof route.enter.before === 'function') {
+      route.enter.after({ location });
+    }
+    if (change && typeof change.after === 'function') {
+      change.after({ location });
+    }
   }
 }
