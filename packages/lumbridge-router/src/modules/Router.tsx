@@ -7,7 +7,7 @@ interface IEvents {
   after: () => Promise<any>;
 }
 
-interface IRoute {
+interface IRouteOptions {
   path: string;
   exact?: boolean;
   component: React.ReactNode;
@@ -15,9 +15,13 @@ interface IRoute {
   after?: IEvents;
 }
 
+interface IRoute extends IRouteOptions {
+  name: string;
+}
+
 interface IConfig {
   routes: {
-    [name: string]: IRoute;
+    [name: string]: IRouteOptions;
   };
   change?: IEvents;
   nomatch?: {
@@ -31,7 +35,7 @@ export default class Router {
   }
 
   protected config: IConfig;
-  protected routes: Array<IRoute & { name: string }>;
+  protected routes: IRoute[];
 
   constructor(config: IConfig) {
     if (!config) {
@@ -46,7 +50,7 @@ export default class Router {
     this.routes = this.setupRoutes();
   }
 
-  private setupRoutes(): Array<IRoute & { name: string }> {
+  private setupRoutes(): IRoute[] {
     return Object.keys(this.config.routes)
       .map(name => ({
         name,
@@ -63,15 +67,13 @@ export default class Router {
       });
   }
 
-  private isRouteMatch(route: IRoute & { name: string }): boolean {
-    return matchPath({
-      currentPath: history.location.pathname,
-      routePath: route.path,
-    });
-  }
-
-  get Routes(): React.SFC<{}> {
-    // TODO: find the correct route and render...
-    return () => <div />;
+  get Routes(): React.ReactNode {
+    const index = (this.routes as any[]).indexOf((route: IRoute) =>
+      matchPath({
+        currentPath: history.location.pathname,
+        routePath: route.path,
+      })
+    );
+    return index >= 0 ? this.routes[index].component : null;
   }
 }
