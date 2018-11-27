@@ -46,7 +46,7 @@ export default class Router {
     this.routes = this.sortedRoutes();
   }
 
-  public router(): React.ReactNode {
+  public render(): React.ReactNode {
     return () => (
       <Route
         history={history}
