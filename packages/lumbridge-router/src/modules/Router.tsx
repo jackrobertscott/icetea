@@ -47,7 +47,6 @@ export default class Router {
   }
 
   public routes(): React.ReactNode {
-    console.log(this.config.change);
     return () => (
       <Route
         history={history}
