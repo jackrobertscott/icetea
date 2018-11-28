@@ -4,28 +4,36 @@ import { number } from 'yup';
 import { Store } from '..';
 
 describe('const store = Store.create()', () => {
+  let fakeStore: Store;
+  beforeEach(() => {
+    fakeStore = Store.create({
+      schema: {
+        memes: {
+          state: '',
+          validate: (value: any) => typeof value === 'string',
+        },
+        dreams: {
+          state: 42,
+          validate: number().required(),
+        },
+      },
+    });
+  });
   it('should create a instance of Store', () => {
     const store = Store.create({
       schema: {},
     });
     expect(store).to.be.instanceOf(Store);
   });
-  describe('store.watch()', () => {
-    let fakeStore: Store;
-    beforeEach(() => {
-      fakeStore = Store.create({
-        schema: {
-          memes: {
-            state: '',
-            validate: (value: any) => typeof value === 'string',
-          },
-          dreams: {
-            state: 42,
-            validate: number().required(),
-          },
-        },
-      });
+  describe('store.state', () => {
+    it('should clone state object rather than mutating the original', () => {
+      const original = fakeStore.state;
+      fakeStore.update({});
+      const updated = fakeStore.state;
+      expect(original === updated).to.equal(false);
     });
+  });
+  describe('store.watch()', () => {
     it('should trigger an update and call the watched function', () => {
       const spy = fake();
       const unwatch = fakeStore.watch({ state: () => spy() });

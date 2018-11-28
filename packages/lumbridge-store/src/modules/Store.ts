@@ -85,6 +85,10 @@ export default class Store {
     return { ...this.currentState };
   }
 
+  public get errors(): IState {
+    return { ...this.currentErrors };
+  }
+
   public get dispatch(): void {
     return Object.keys(this.actions).reduce(
       (collection, key) => {
