@@ -58,13 +58,12 @@ export default class Store {
     };
   }
 
-  public update(changes: IState) {
+  public update(changes: IState): void {
     this.updateState(changes);
-
-    return;
+    this.executeListeners();
   }
 
-  private updateState(changes: IState) {
+  private updateState(changes: IState): IState {
     this.currentState = {
       ...this.currentState,
       ...changes,
@@ -72,7 +71,7 @@ export default class Store {
     return this.currentState;
   }
 
-  private executeListeners() {
+  private executeListeners(): void {
     this.watchSets.forEach(({ state, errors }) => {
       if (state) {
         state({ ...this.currentState });
