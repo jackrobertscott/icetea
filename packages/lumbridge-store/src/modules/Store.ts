@@ -13,8 +13,13 @@ interface ISchema {
   };
 }
 
+interface IActions {
+  [name: string]: (...args: any[]) => IState;
+}
+
 interface IConfig {
   schema: ISchema;
+  actions: IActions;
 }
 
 interface IWatchable {
@@ -29,6 +34,7 @@ export default class Store {
 
   private config: IConfig;
   private schema: ISchema;
+  private actions: IActions;
   private currentState: IState;
   private currentErrors: IErrors;
   private watchSets: Map<number, IWatchable>;
@@ -36,6 +42,7 @@ export default class Store {
   constructor(config: IConfig) {
     this.config = { ...config };
     this.schema = this.config.schema;
+    this.actions = this.config.actions;
     this.watchSets = new Map();
     this.currentState = {};
     this.currentErrors = {};
@@ -68,6 +75,20 @@ export default class Store {
     return { ...this.currentState };
   }
 
+  public get dispatch(): void {
+    return Object.keys(this.actions).reduce(
+      (collection, key) => {
+        const dispatchAction = (...args: any[]) =>
+          this.update(this.actions[key](...args));
+        return {
+          ...collection,
+          [key]: dispatchAction,
+        };
+      },
+      {} as any
+    );
+  }
+
   public update(changes: IState): void {
     this.regenerateState(changes);
     this.determineErrors();
@@ -86,7 +107,7 @@ export default class Store {
         typeof clonedState[key] === undefined
           ? this.schema[key].state
           : clonedState[key];
-      return { ...collection, key: value };
+      return { ...collection, [key]: value };
     }, {});
     this.executeStateListeners();
   }
