@@ -1,28 +1,28 @@
-interface IState {
+export interface IState {
   [key: string]: string;
 }
 
-interface IErrors {
+export interface IErrors {
   [key: string]: string;
 }
 
-interface ISchema {
+export interface ISchema {
   [key: string]: {
-    state: string;
+    state: any;
     validate?: any;
   };
 }
 
-interface IActions {
+export interface IActions {
   [name: string]: (...args: any[]) => IState;
 }
 
-interface IConfig {
+export interface IConfig {
   schema: ISchema;
-  actions: IActions;
+  actions?: IActions;
 }
 
-interface IWatchable {
+export interface IWatchable {
   state?: (state: IState) => any;
   errors?: (errors: IErrors) => any;
 }
@@ -40,9 +40,17 @@ export default class Store {
   private watchSets: Map<number, IWatchable>;
 
   constructor(config: IConfig) {
+    if (!config) {
+      throw new Error('Expected config object to be given to constructor.');
+    }
+    if (!config.schema) {
+      throw new Error(
+        'Expected config.schema object to be given to constructor.'
+      );
+    }
     this.config = { ...config };
     this.schema = this.config.schema;
-    this.actions = this.config.actions;
+    this.actions = this.config.actions || {};
     this.watchSets = new Map();
     this.currentState = {};
     this.currentErrors = {};
@@ -122,7 +130,7 @@ export default class Store {
             return [key, validate.validate()];
           }
           if (typeof validate === 'function' && !validate(value)) {
-            return [key, () => `The ${key} is not valid.`];
+            return [key, `The ${key} is not valid.`];
           }
         }
         return [];
@@ -136,8 +144,8 @@ export default class Store {
           [name]: error,
         };
       }, {});
+      this.executeErrorListeners();
     });
-    this.executeErrorListeners();
   }
 
   private executeStateListeners(): void {
