@@ -2,10 +2,14 @@ interface IState {
   [key: string]: string;
 }
 
+interface IErrors {
+  [key: string]: string;
+}
+
 interface ISchema {
   [key: string]: {
-    default: string;
-    validate?: () => boolean;
+    state: string;
+    validate?: any;
   };
 }
 
@@ -15,7 +19,7 @@ interface IConfig {
 
 interface IWatchable {
   state?: (state: IState) => any;
-  errors?: () => any;
+  errors?: (errors: IErrors) => any;
 }
 
 export default class Store {
@@ -26,6 +30,7 @@ export default class Store {
   private config: IConfig;
   private schema: ISchema;
   private currentState: IState;
+  private currentErrors: IErrors;
   private watchSets: Map<number, IWatchable>;
 
   constructor(config: IConfig) {
@@ -33,6 +38,7 @@ export default class Store {
     this.schema = this.config.schema;
     this.watchSets = new Map();
     this.currentState = {};
+    this.currentErrors = {};
   }
 
   public watch(watchable: IWatchable): () => void {
@@ -58,27 +64,70 @@ export default class Store {
     };
   }
 
-  public update(changes: IState): void {
-    this.updateState(changes);
-    this.executeListeners();
+  public get state(): IState {
+    return { ...this.currentState };
   }
 
-  private updateState(changes: IState): IState {
-    this.currentState = {
+  public update(changes: IState): void {
+    this.regenerateState(changes);
+    this.determineErrors();
+  }
+
+  private regenerateState(changes: IState): void {
+    const clonedState = {
       ...this.currentState,
       ...changes,
     };
-    return this.currentState;
+    this.currentState = Object.keys(this.schema).reduce((collection, key) => {
+      if (!this.schema[key]) {
+        return collection;
+      }
+      const value =
+        typeof clonedState[key] === undefined
+          ? this.schema[key].state
+          : clonedState[key];
+      return { ...collection, key: value };
+    }, {});
+    this.executeStateListeners();
   }
 
-  private executeListeners(): void {
-    this.watchSets.forEach(({ state, errors }) => {
-      if (state) {
-        state({ ...this.currentState });
-      }
-      if (errors) {
-        errors();
-      }
+  private determineErrors() {
+    const tasks = Object.keys(this.schema)
+      .map((key: string) => {
+        const { validate } = this.schema[key];
+        const value = this.currentState[key];
+        if (validate) {
+          if (validate.validate) {
+            return [key, validate.validate()];
+          }
+          if (typeof validate === 'function' && !validate(value)) {
+            return [key, () => `The ${key} is not valid.`];
+          }
+        }
+        return [];
+      })
+      .filter(schema => schema.length);
+    Promise.all(tasks.map(schema => schema[1])).then(errors => {
+      this.currentErrors = errors.reduce((collection, error, index) => {
+        const name = tasks[index][0] as string;
+        return {
+          ...collection,
+          [name]: error,
+        };
+      }, {});
     });
+    this.executeErrorListeners();
+  }
+
+  private executeStateListeners(): void {
+    this.watchSets.forEach(
+      ({ state }) => state && state({ ...this.currentState })
+    );
+  }
+
+  private executeErrorListeners(): void {
+    this.watchSets.forEach(
+      ({ errors }) => errors && errors({ ...this.currentErrors })
+    );
   }
 }

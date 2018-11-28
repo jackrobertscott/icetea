@@ -61,15 +61,15 @@ import { string, boolean, object } from 'yup';
 const store = Store.create({
   schema: {
     userId: {
-      default: null,
+      state: null,
       validate: string(),
     },
     loggedIn: {
-      default: false,
+      state: false,
       validate: boolean().required(),
     },
     deepExample: {
-      default: null,
+      state: null,
       validate: object({
         one: string(),
         two: string().required(),
@@ -136,7 +136,7 @@ import { string } from 'yup';
 const store = Store.create({
   schema: {
     example: {
-      default: '',
+      state: '',
       validate: string(),
     },
     other: {

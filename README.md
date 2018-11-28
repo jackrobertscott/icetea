@@ -229,7 +229,7 @@ Considerations in design:
 - Get awesome data validation by using [Yup](https://www.npmjs.com/package/yup) the third party validation library.
 - Is effective at managing form data.
 - Updates state using `store.update({})` which is similar to how `this.setState({})` works, only partially updating the store.
-- Reset the store by using `store.reset()` which will set the stores values back to their defaults.
+- Reset the store by using `store.reset()` which will set the stores values back to their state.
 
 ```js
 import { Store } from 'lumbridge';
@@ -241,18 +241,18 @@ import { string, boolean, object } from 'yup';
 const authStore = Store.create({
   schema: {
     token: {
-      default: null,
+      state: null,
     },
     userId: {
-      default: null,
+      state: null,
       validate: string(),
     },
     loggedIn: {
-      default: false,
+      state: false,
       validate: boolean().required(),
     },
     big: {
-      default: null,
+      state: null,
       validate: object({
         one: string().required(),
         two: string().required(),
