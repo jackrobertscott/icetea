@@ -1,5 +1,6 @@
 import React from 'react';
 import { Router } from 'lumbridge';
+import FAQ from '../FAQ';
 
 export default Router.create({
   change: {
@@ -9,22 +10,22 @@ export default Router.create({
   nomatch: {
     redirect: '/',
   },
-  routes: [
-    {
+  routes: {
+    home: {
       path: '/',
       component: () => <div>Home Page</div>,
     },
-    {
+    about: {
       path: '/about',
       component: () => <div>About Page</div>,
     },
-    {
+    faq: {
       path: '/faq',
-      component: () => <div>FAQ Page</div>,
+      component: () => <FAQ />,
       enter: {
-        before: () => console.log('> enter before faq') || false,
+        before: () => console.log('> enter before faq'),
         after: () => console.log('< enter after faq'),
       },
     },
-  ],
+  },
 });

@@ -19,7 +19,9 @@ export interface IRoute {
 }
 
 export interface IConfig {
-  routes: IRoute[];
+  routes: {
+    [name: string]: IRoute;
+  };
   change?: IEvents;
   nomatch?: {
     redirect: string;
@@ -32,7 +34,7 @@ export default class Router {
   }
 
   protected config: IConfig;
-  protected sortedRoutes: IRoute[];
+  protected routes: IRoute[];
 
   constructor(config: IConfig) {
     expect.type('config', config, 'object');
@@ -40,10 +42,10 @@ export default class Router {
     expect.type('config.change', config.change, 'object', true);
     expect.type('config.nomatch', config.nomatch, 'object', true);
     this.config = { ...config };
-    this.sortedRoutes = this.config.routes.sort(compareRoutePaths);
+    this.routes = this.createRoutes();
   }
 
-  public routes(): React.ReactNode {
+  public setup(): React.ReactNode {
     return () => (
       <Route
         history={history}
@@ -54,9 +56,17 @@ export default class Router {
     );
   }
 
+  private createRoutes(): IRoute[] {
+    return Object.keys(this.config.routes)
+      .reduce((collection: IRoute[], name): IRoute[] => {
+        return collection.concat([{ name, ...this.config.routes[name] }]);
+      }, [])
+      .sort(compareRoutePaths);
+  }
+
   private currentRoute = (pathname?: string): IRoute | null => {
     return (
-      (this.sortedRoutes as any[]).filter((route: IRoute) => {
+      (this.routes as any[]).filter((route: IRoute) => {
         return matchPath({
           currentPath: pathname || history.location.pathname,
           routePath: route.path,
