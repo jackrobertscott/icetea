@@ -2,14 +2,14 @@ import React, { Component } from 'react';
 import { Link } from 'lumbridge-router';
 import Main from './layouts/Main';
 import mainRouter from './routes/mainRouter';
-import { getAuthInstance } from './services/auth';
+import { setAuthInstance } from './services/auth';
 
 const Routes = mainRouter.setup();
 
 export default class App extends Component {
   componentDidMount() {
-    getAuthInstance.watch({
-      data: data => console.log(data),
+    setAuthInstance.watch({
+      data: data => console.log('watch', data),
     });
   }
 

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { setAuthInstance } from './services/auth';
 
-export default class App extends Component {
+export default class FAQ extends Component {
   componentDidMount() {
     setAuthInstance.execute({ data: 'blahblahblah' });
   }

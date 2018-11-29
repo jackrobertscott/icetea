@@ -20,9 +20,7 @@ const createFakeStore = (override?: ISchema) =>
 
 describe('const store = Store.create()', () => {
   it('should create a instance of Store', () => {
-    const store = Store.create({
-      schema: {},
-    });
+    const store = Store.create({ schema: {} });
     expect(store).to.be.instanceOf(Store);
   });
   it.skip('should validate the config object has the correct properties');

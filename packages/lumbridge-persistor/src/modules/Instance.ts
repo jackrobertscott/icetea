@@ -65,13 +65,13 @@ export class Instance {
   }
 
   public execute(payload: any) {
-    const map = this.mapped(payload);
-    // TODO: validate with "this.method.payload" schema
     this.executeListeners({
       status: { loading: false },
     });
+    const map = this.mapped(payload);
+    // TODO: validate with "this.method.payload" schema
     const response = this.method.handler(map);
-    if (response! instanceof Promise) {
+    if (!(response instanceof Promise)) {
       throw new Error(
         `Expected "method.handler" to return a Promise but got "${typeof response}".`
       );
