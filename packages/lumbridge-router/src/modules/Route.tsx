@@ -72,7 +72,11 @@ export default class Route extends React.Component<IRouteProps, IRouteState> {
   private nomatchRoute() {
     const { history, nomatch } = this.props;
     if (nomatch && nomatch.redirect) {
-      history.replace(nomatch.redirect);
+      /**
+       * Set timeout is used to push function to next process tick
+       * so that it does not try and update state before end of render.
+       */
+      setTimeout(() => history.replace(nomatch.redirect));
     }
     return <React.Fragment />;
   }

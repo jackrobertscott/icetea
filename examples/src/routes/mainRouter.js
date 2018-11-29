@@ -1,5 +1,5 @@
 import React from 'react';
-import { Router } from 'lumbridge-router';
+import { Router } from 'lumbridge';
 
 export default Router.create({
   change: {
