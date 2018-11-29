@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { setAuthInstance } from './services/auth';
+import authStore from './stores/authStore';
 
 export default class FAQ extends Component {
   constructor(...args) {
@@ -14,7 +15,10 @@ export default class FAQ extends Component {
       setAuthInstance.execute({ data: { time: Date.now() } });
     }, 1000);
     this.unwatch = setAuthInstance.watch({
-      data: ({ data: { time } }) => this.setState({ time }),
+      data: ({ data: { time } }) => {
+        authStore.update({ userId: String(time) });
+        this.setState({ time });
+      },
     });
   }
 
