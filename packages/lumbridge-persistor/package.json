@@ -1,6 +1,6 @@
 {
   "name": "lumbridge-persistor",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "private": false,
   "description": "Improved logic management for React apps.",
   "author": {
@@ -22,7 +22,7 @@
     "compile": "tsc"
   },
   "dependencies": {
-    "lumbridge-core": "^0.0.2"
+    "lumbridge-core": "^0.0.3"
   },
   "devDependencies": {
     "@types/chai": "^4.1.7",
