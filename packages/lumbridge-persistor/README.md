@@ -89,7 +89,7 @@ Properties:
 
 **Note:** make sure your `handler` function returns a promise or it will not work e.g. `new Promise((resolve, reject) => resolve(data))`.
 
-#### `persistor.map[methodName]`
+#### `persistor.instance[methodName]`
 
 - Type: `func`
 - Returns: `persistorMethod`
@@ -99,7 +99,7 @@ Create a persistor method with more specific properties to the method being call
 ```js
 const serverPersistor = Persistor.create(config);
 
-const meQueryMethod = serverPersistor.map.query(({ variables }) => ({
+const meQueryMethod = serverPersistor.instance.query(({ variables }) => ({
   query: `
     query($id: String) {
       me(id: $id) { name }
@@ -176,8 +176,8 @@ This will connect a persistor method to the scope. Connecting a persistor method
 
 ```js
 const persistor = Persistor.create({});
-const persistorFirstMethod = persistor.map.exampleQuery(() => {});
-const persistorSecondMethod = persistor.map.otherQuery(() => {});
+const persistorFirstMethod = persistor.instance.exampleQuery(() => {});
+const persistorSecondMethod = persistor.instance.otherQuery(() => {});
 const scope = Scope.create({});
 
 scope.absorb(persistorFirstMethod);

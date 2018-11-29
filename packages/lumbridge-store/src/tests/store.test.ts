@@ -57,13 +57,18 @@ describe('const store = Store.create()', () => {
       unwatch();
     });
     it('should not trigger an error when the validator succeeds', done => {
+      let theErrors: object = {};
       const spy = fake();
       const unwatch = fakeStore.watch({
-        errors: args => (console.log(args) as any) || spy(),
+        errors: errors => {
+          theErrors = errors;
+          spy();
+        },
       });
       fakeStore.update({ memes: 'Valid string.' });
       setTimeout(() => {
-        expect(spy.calledOnce).to.equal(false);
+        expect(Object.keys(theErrors).length).to.equal(0);
+        expect(spy.calledOnce).to.equal(true);
         unwatch();
         done();
       });

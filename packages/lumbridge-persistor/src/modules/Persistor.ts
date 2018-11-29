@@ -9,11 +9,16 @@ export interface IConfig {
   methods: IMethods;
 }
 
+export interface IInstances {
+  [name: string]: (map: IExecute) => Instance;
+}
+
 export default class Persistor {
   public static create(config: IConfig): Persistor {
     return new Persistor(config);
   }
 
+  public instance: IInstances;
   private config: IConfig;
   private methods: IMethods;
 
@@ -22,19 +27,17 @@ export default class Persistor {
     expect('config.methods', config.methods, 'object');
     this.config = { ...config };
     this.methods = this.config.methods;
+    this.instance = this.createInstances();
   }
 
-  public get map(): void {
-    return Object.keys(this.methods).reduce(
-      (collection, key) => {
-        const createInstance = (mapped: IExecute) =>
-          Instance.create({ mapped, method: this.methods[key] });
-        return {
-          ...collection,
-          [key]: createInstance,
-        };
-      },
-      {} as any
-    );
+  private createInstances(): IInstances {
+    return Object.keys(this.methods).reduce((collection, key) => {
+      const createInstance = (map: IExecute) =>
+        Instance.create({ mapped: map, method: this.methods[key] });
+      return {
+        ...collection,
+        [key]: createInstance,
+      };
+    }, {});
   }
 }

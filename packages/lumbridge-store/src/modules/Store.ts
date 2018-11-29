@@ -27,11 +27,16 @@ export interface IWatchable {
   errors?: (errors: IErrors) => any;
 }
 
+export interface IDispatches {
+  [name: string]: (...args: any[]) => void;
+}
+
 export default class Store {
   public static create(config: IConfig): Store {
     return new Store(config);
   }
 
+  public dispatch: IDispatches;
   private config: IConfig;
   private schema: ISchema;
   private actions: IActions;
@@ -56,6 +61,7 @@ export default class Store {
     this.currentErrors = {};
     this.generateState({});
     this.generateErrors();
+    this.dispatch = this.createDispatches();
   }
 
   public watch(watchable: IWatchable): () => void {
@@ -89,23 +95,13 @@ export default class Store {
     return { ...this.currentErrors };
   }
 
-  public get dispatch(): void {
-    return Object.keys(this.actions).reduce(
-      (collection, key) => {
-        const dispatchAction = (...args: any[]) =>
-          this.update(this.actions[key](...args));
-        return {
-          ...collection,
-          [key]: dispatchAction,
-        };
-      },
-      {} as any
-    );
-  }
-
   public update(changes: IState): void {
-    this.generateState(changes, () => this.executeStateListeners());
-    this.generateErrors(() => this.executeErrorListeners());
+    this.generateState(changes, () => {
+      this.executeListeners({ state: this.currentState });
+    });
+    this.generateErrors(() => {
+      this.executeListeners({ errors: this.currentErrors });
+    });
   }
 
   private generateState(changes: IState, cb?: () => any): void {
@@ -166,15 +162,38 @@ export default class Store {
     }, {});
   }
 
-  private executeStateListeners(): void {
-    const clone = { ...this.currentState };
-    this.watchSets.forEach(({ state }) => state && state(clone));
+  private executeListeners(updates: {
+    state?: IState;
+    errors?: IErrors;
+  }): void {
+    this.watchSets.forEach((watchable: IWatchable) => {
+      this.executeIsolation(watchable, updates);
+    });
   }
 
-  private executeErrorListeners(): void {
-    const clone = { ...this.currentErrors };
-    if (Object.keys(clone).length) {
-      this.watchSets.forEach(({ errors }) => errors && errors(clone));
+  private executeIsolation(
+    watchable: IWatchable,
+    updates: {
+      state?: IState;
+      errors?: IErrors;
     }
+  ): void {
+    if (watchable.state !== undefined && updates.state) {
+      watchable.state({ ...updates.state });
+    }
+    if (watchable.errors !== undefined && updates.errors) {
+      watchable.errors({ ...updates.errors });
+    }
+  }
+
+  private createDispatches(): IDispatches {
+    return Object.keys(this.actions).reduce((collection, key) => {
+      const dispatchAction = (...args: any[]) =>
+        this.update(this.actions[key](...args));
+      return {
+        ...collection,
+        [key]: dispatchAction,
+      };
+    }, {});
   }
 }
