@@ -27,5 +27,11 @@
     "database",
     "component",
     "components"
-  ]
+  ],
+  "dependencies": {
+    "lumbridge-core": "^0.0.2",
+    "lumbridge-persistor": "^0.0.2",
+    "lumbridge-router": "^0.0.2",
+    "lumbridge-store": "^0.0.2"
+  }
 }

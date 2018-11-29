@@ -2,7 +2,7 @@
   "name": "root",
   "private": true,
   "scripts": {
-    "build": "yarn && lerna run build",
+    "build": "lerna run build",
     "prepublish": "yarn run build",
     "test": "lerna run test",
     "bootstrap": "lerna bootstrap",
