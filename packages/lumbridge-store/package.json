@@ -3,10 +3,13 @@
   "version": "0.0.1",
   "private": false,
   "description": "Improved logic management for React apps.",
-  "author": "Jack Scott <jack.rob.scott@gmail.com>",
+  "author": {
+    "name": "Jack R. Scott",
+    "email": "jack.rob.scott@gmail.com"
+  },
   "license": "MIT",
   "main": "lib/index.js",
-  "source": "src/index.js",
+  "source": "src/index.ts",
   "files": [
     "lib",
     "README.md"
