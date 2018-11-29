@@ -1,1 +1,1 @@
-export { default as Persistor } from './Persistor';
+export { default as Persistor } from './modules/Persistor';

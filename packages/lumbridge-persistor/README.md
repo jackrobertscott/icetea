@@ -38,7 +38,7 @@ const persistor = Persistor.create(config);
 
 This config object will contain all the information required by the persistor.
 
-#### `config.actions`
+#### `config.methods`
 
 - Type: `object`
 - Required: `true`
@@ -47,7 +47,7 @@ A set of methods which provide an common interface for interacting with a data s
 
 ```js
 const serverPersistor = Persistor.create({
-  actions: {
+  methods: {
     // code...
   },
 });
@@ -57,7 +57,7 @@ Example:
 
 ```js
 const serverPersistor = Persistor.create({
-  actions: {
+  methods: {
     query: {
       payload: {
         query: string().required(),
@@ -84,20 +84,22 @@ const serverPersistor = Persistor.create({
 
 Properties:
 
-- `[actionName].payload` [object]: a set of validations used to check that the payload is the correct shape and type.
-- `[actionName].handler` [func]: the executed function which handles
+- `[methodName].payload` [object]: a set of validations used to check that the payload is the correct shape and type.
+- `[methodName].handler` [func]: a function which collects and returns data in a `Promise`.
 
-#### `persistor.map[actionName]`
+**Note:** make sure your `handler` function returns a promise or it will not work e.g. `new Promise((resolve, reject) => resolve(data))`.
+
+#### `persistor.map[methodName]`
 
 - Type: `func`
-- Returns: `persistorAction`
+- Returns: `persistorMethod`
 
-Create a persistor action with more specific properties to the method being called.
+Create a persistor method with more specific properties to the method being called.
 
 ```js
 const serverPersistor = Persistor.create(config);
 
-const meQueryAction = serverPersistor.map.query(({ variables }) => ({
+const meQueryMethod = serverPersistor.map.query(({ variables }) => ({
   query: `
     query($id: String) {
       me(id: $id) { name }
@@ -107,24 +109,24 @@ const meQueryAction = serverPersistor.map.query(({ variables }) => ({
 }));
 ```
 
-**Note:** the callback provided is used to map the variables passed to the `meQueryAction.execute` function to the handler payload.
+**Note:** the callback provided is used to map the variables passed to the `meQueryMethod.execute` function to the handler payload.
 
-#### `persistorAction.execute`
+#### `persistorMethod.execute`
 
 - Type: `func`
 - Returns: `void`
 
-Execute the persistor action with parameters (which you specify).
+Execute the persistor method with parameters (which you specify).
 
 ```js
-meQueryAction.execute({
+meQueryMethod.execute({
   variables: { id },
 });
 ```
 
-**Note:** by seperating the functionality of *executing* an action and *receiving* that action's data, it enables you to more efficiently re-query the data without the code overhead. A good example would be when you wish to load a list of items that will change based upon a search filter. The list can be requeried easily while you only have to handle how that data is handled only once.
+**Note:** by seperating the functionality of *executing* an method and *receiving* that method's data, it enables you to more efficiently re-query the data without the code overhead. A good example would be when you wish to load a list of items that will change based upon a search filter. The list can be requeried easily while you only have to handle how that data is handled only once.
 
-#### `persistorAction.watch`
+#### `persistorMethod.watch`
 
 - Type: `func`
 - Returns: `unwatch`
@@ -132,7 +134,7 @@ meQueryAction.execute({
 Listen to any updates in the persistor as the persistor instance executes.
 
 ```js
-const unwatch = meQueryAction.watch({
+const unwatch = meQueryMethod.watch({
   done: data => setData(data),
   catch: error => setError(error),
   status: loading => setLoading(loading),
@@ -141,7 +143,7 @@ const unwatch = meQueryAction.watch({
 const componentWillUnmount = () => unwatch();
 ```
 
-**Note:** when you start watching a persistor action, don't forget to call the `unwatch` function when the component unmounts and you stop listening for changes (see above code). If you don't unwatch, then you might cause a memory leak.
+**Note:** when you start watching a persistor method, don't forget to call the `unwatch` function when the component unmounts and you stop listening for changes (see above code). If you don't unwatch, then you might cause a memory leak.
 
 ### Scopes
 
@@ -170,29 +172,29 @@ Scopes are used to add extra functionality to persistors so that they can listen
 - Type: `func`
 - Returns: `void`
 
-This will connect a persistor action to the scope. Connecting a persistor action will enable the scope to listen to the changes in all the connected actions.
+This will connect a persistor method to the scope. Connecting a persistor method will enable the scope to listen to the changes in all the connected methods.
 
 ```js
 const persistor = Persistor.create({});
-const persistorFirstAction = persistor.map.exampleQuery(() => {});
-const persistorSecondAction = persistor.map.otherQuery(() => {});
+const persistorFirstMethod = persistor.map.exampleQuery(() => {});
+const persistorSecondMethod = persistor.map.otherQuery(() => {});
 const scope = Scope.create({});
 
-scope.absorb(persistorFirstAction);
-scope.absorb(persistorSecondAction, true);
+scope.absorb(persistorFirstMethod);
+scope.absorb(persistorSecondMethod, true);
 ```
 
 Parameters:
 
-- `arguments[0]` [persistorAction]: the persistor action to add to the scope.
-- `arguments[1]` [boolean]: if this is `true` then the action will re-run the last execution after *any* of the other connected actions run successfully.
+- `arguments[0]` [persistorMethod]: the persistor method to add to the scope.
+- `arguments[1]` [boolean]: if this is `true` then the method will re-run the last execution after *any* of the other connected methods run successfully.
 
 #### `scope.watch`
 
 - Type: `func`
 - Returns: `unwatch`
 
-This will combine and watch all of the persistor actions. This can be useful when you want to listen to any errors which occur in your actions and respond to them all in the same way (such as by creating a toast message).
+This will combine and watch all of the persistor methods. This can be useful when you want to listen to any errors which occur in your methods and respond to them all in the same way (such as by creating a toast message).
 
 ```js
 const unwatch = scope.watch({

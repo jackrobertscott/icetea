@@ -25,6 +25,7 @@ describe('const store = Store.create()', () => {
     });
     expect(store).to.be.instanceOf(Store);
   });
+  it.skip('should validate the config object has the correct properties');
   describe('store.state', () => {
     it('should clone state object rather than mutating the original', () => {
       const original = fakeStore.state;
@@ -95,5 +96,6 @@ describe('const store = Store.create()', () => {
         done();
       });
     });
+    it.skip('should stop listening to watch functions after unwatch()');
   });
 });
