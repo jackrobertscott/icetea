@@ -3,7 +3,7 @@ export interface IState {
 }
 
 export interface IErrors {
-  [key: string]: string;
+  [key: string]: Error;
 }
 
 export interface ISchema {
@@ -118,7 +118,7 @@ export default class Store {
   private generateErrors(cb?: () => any) {
     this.currentErrors = Object.keys(this.schema).reduce((collection, key) => {
       const { validate } = this.schema[key];
-      const issue: string | null = validate
+      const issue: Error | null = validate
         ? this.validateProp(validate, this.currentState[key], key)
         : null;
       if (issue) {
@@ -134,17 +134,16 @@ export default class Store {
     }
   }
 
-  private validateProp(validate: any, value: any, key: string): string | null {
+  private validateProp(validate: any, value: any, key: string): Error | null {
     if (validate.validateSync) {
       try {
         validate.validateSync(value);
       } catch (error) {
-        return error.errors[0];
+        return error;
       }
-    }
-    if (typeof validate === 'function') {
+    } else if (typeof validate === 'function') {
       if (!validate(value)) {
-        return `The ${key} is not valid.`;
+        return new Error(`The ${key} is not valid.`);
       }
     }
     return null;
@@ -178,10 +177,10 @@ export default class Store {
       errors?: IErrors;
     }
   ): void {
-    if (watchable.state !== undefined && updates.state) {
+    if (watchable.state !== undefined && updates.state !== undefined) {
       watchable.state({ ...updates.state });
     }
-    if (watchable.errors !== undefined && updates.errors) {
+    if (watchable.errors !== undefined && updates.errors !== undefined) {
       watchable.errors({ ...updates.errors });
     }
   }
