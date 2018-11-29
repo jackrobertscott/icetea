@@ -2,10 +2,11 @@
   "name": "root",
   "private": true,
   "scripts": {
-    "build": "lerna run build",
-    "prepublishOnly": "yarn run build",
-    "test": "lerna run test",
     "bootstrap": "lerna bootstrap",
+    "test": "lerna run test",
+    "build": "lerna run build",
+    "ship": "lerna publish",
+    "prepublishOnly": "yarn run build",
     "launch": "cd examples && yarn start && cd .."
   },
   "devDependencies": {
