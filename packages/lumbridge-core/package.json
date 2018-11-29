@@ -1,6 +1,6 @@
 {
   "name": "lumbridge-core",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "private": false,
   "description": "Improved logic management for React apps.",
   "author": {

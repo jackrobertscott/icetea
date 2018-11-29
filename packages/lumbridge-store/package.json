@@ -1,6 +1,6 @@
 {
   "name": "lumbridge-store",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "private": false,
   "description": "Improved logic management for React apps.",
   "author": {
@@ -23,7 +23,7 @@
     "compile": "tsc"
   },
   "dependencies": {
-    "lumbridge-core": "^0.0.3"
+    "lumbridge-core": "^0.0.4"
   },
   "devDependencies": {
     "@types/chai": "^4.1.7",
@@ -32,8 +32,8 @@
     "@types/yup": "^0.26.2",
     "chai": "^4.2.0",
     "mocha": "^5.2.0",
-    "sinon": "^7.1.1",
     "nodemon": "^1.18.6",
+    "sinon": "^7.1.1",
     "ts-node": "^7.0.1",
     "yup": "^0.26.6"
   }
