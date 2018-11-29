@@ -61,6 +61,14 @@ export default class Store {
     this.dispatch = this.createDispatches();
   }
 
+  public get state(): IState {
+    return { ...this.currentState };
+  }
+
+  public get errors(): IState {
+    return { ...this.currentErrors };
+  }
+
   public watch(watchable: IWatchable): () => void {
     if (watchable.state && typeof watchable.state !== 'function') {
       throw new Error(
@@ -82,14 +90,6 @@ export default class Store {
         this.watchSets.delete(id);
       }
     };
-  }
-
-  public get state(): IState {
-    return { ...this.currentState };
-  }
-
-  public get errors(): IState {
-    return { ...this.currentErrors };
   }
 
   public update(changes: IState): void {

@@ -35,6 +35,16 @@ describe('const store = Store.create()', () => {
       expect(original === updated).to.equal(false);
     });
   });
+  describe('store.errors', () => {
+    it('should clone errors object rather than mutating the original', () => {
+      const fakeStore = createFakeStore();
+      fakeStore.update({ dreams: 'Wrong type.' });
+      const original = fakeStore.errors;
+      fakeStore.update({ dreams: 'Wrong type.' });
+      const updated = fakeStore.errors;
+      expect(original === updated).to.equal(false);
+    });
+  });
   describe('store.watch()', () => {
     it('should trigger an update and call the watched function', () => {
       const spy = fake();
