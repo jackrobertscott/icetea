@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "build": "lerna run build",
-    "prepublish": "yarn run build",
+    "prepublishOnly": "yarn run build",
     "test": "lerna run test",
     "bootstrap": "lerna bootstrap",
     "launch": "cd examples && yarn start && cd .."
