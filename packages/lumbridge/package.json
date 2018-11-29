@@ -20,6 +20,12 @@
     "clean": "rm -rf lib",
     "compile": "tsc"
   },
+  "dependencies": {
+    "lumbridge-core": "^0.0.3",
+    "lumbridge-persistor": "^0.0.3",
+    "lumbridge-router": "^0.0.3",
+    "lumbridge-store": "^0.0.3"
+  },
   "keywords": [
     "react",
     "route",
@@ -28,11 +34,5 @@
     "database",
     "component",
     "components"
-  ],
-  "dependencies": {
-    "lumbridge-core": "^0.0.3",
-    "lumbridge-persistor": "^0.0.3",
-    "lumbridge-router": "^0.0.3",
-    "lumbridge-store": "^0.0.3"
-  }
+  ]
 }
