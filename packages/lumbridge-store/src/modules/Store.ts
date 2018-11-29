@@ -1,3 +1,5 @@
+import { expect } from 'lumbridge-core';
+
 export interface IState {
   [key: string]: any;
 }
@@ -45,14 +47,9 @@ export default class Store {
   private watchSets: Map<number, IWatchable>;
 
   constructor(config: IConfig) {
-    if (!config) {
-      throw new Error('Expected config object to be given to constructor.');
-    }
-    if (!config.schema) {
-      throw new Error(
-        'Expected config.schema object to be given to constructor.'
-      );
-    }
+    expect.type('config', config, 'object');
+    expect.type('config.schema', config.schema, 'object');
+    expect.type('config.actions', config.actions, 'object', true);
     this.config = { ...config };
     this.schema = this.config.schema;
     this.actions = this.config.actions || {};

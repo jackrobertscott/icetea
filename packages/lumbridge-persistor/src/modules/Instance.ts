@@ -1,4 +1,4 @@
-import { expect } from '../utils/types';
+import { expect } from 'lumbridge-core';
 
 export interface IMethod {
   payload: {
@@ -36,9 +36,9 @@ export class Instance {
   private watchSets: Map<number, IWatchable>;
 
   constructor(config: IConfig) {
-    expect('config', config, 'object');
-    expect('config.mapped', config.mapped, 'function');
-    expect('config.method', config.method, 'object');
+    expect.type('config', config, 'object');
+    expect.type('config.mapped', config.mapped, 'function');
+    expect.type('config.method', config.method, 'object');
     this.config = { ...config };
     this.mapped = this.config.mapped;
     this.method = this.config.method;
@@ -46,9 +46,9 @@ export class Instance {
   }
 
   public watch(watchable: IWatchable): () => void {
-    expect('watchable.data', watchable.data, 'function', true);
-    expect('watchable.catch', watchable.catch, 'function', true);
-    expect('watchable.status', watchable.status, 'function', true);
+    expect.type('watchable.data', watchable.data, 'function', true);
+    expect.type('watchable.catch', watchable.catch, 'function', true);
+    expect.type('watchable.status', watchable.status, 'function', true);
     let id: number;
     do {
       id = Math.random();
@@ -65,7 +65,7 @@ export class Instance {
   }
 
   public execute(payload: any) {
-    const map = this.execute(payload);
+    const map = this.mapped(payload);
     // TODO: validate with "this.method.payload" schema
     this.executeListeners({
       status: { loading: false },

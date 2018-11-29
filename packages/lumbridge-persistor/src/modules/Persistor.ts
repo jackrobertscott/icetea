@@ -1,4 +1,4 @@
-import { expect } from '../utils/types';
+import { expect } from 'lumbridge-core';
 import { Instance, IExecute, IMethod } from './Instance';
 
 export interface IMethods {
@@ -23,8 +23,8 @@ export default class Persistor {
   private methods: IMethods;
 
   constructor(config: IConfig) {
-    expect('config', config, 'object');
-    expect('config.methods', config.methods, 'object');
+    expect.type('config', config, 'object');
+    expect.type('config.methods', config.methods, 'object');
     this.config = { ...config };
     this.methods = this.config.methods;
     this.instance = this.createInstances();

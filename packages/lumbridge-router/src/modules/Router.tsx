@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { expect } from 'lumbridge-core';
 import { matchPath, compareRoutePaths } from '../utils/path';
 import history, { ILocation } from '../utils/history';
 import Route from './Route';
@@ -34,14 +35,10 @@ export default class Router {
   protected sortedRoutes: IRoute[];
 
   constructor(config: IConfig) {
-    if (!config) {
-      throw new Error('Expected config object to be given to constructor.');
-    }
-    if (!config.routes) {
-      throw new Error(
-        'Expected config.routes object to be given to constructor.'
-      );
-    }
+    expect.type('config', config, 'object');
+    expect.type('config.routes', config.routes, 'object');
+    expect.type('config.change', config.change, 'object', true);
+    expect.type('config.nomatch', config.nomatch, 'object', true);
     this.config = { ...config };
     this.sortedRoutes = this.config.routes.sort(compareRoutePaths);
   }
