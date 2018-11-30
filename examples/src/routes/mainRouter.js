@@ -4,8 +4,8 @@ import FAQ from '../FAQ';
 
 export default Router.create({
   change: {
-    before: () => console.log('before change'),
-    after: () => console.log('after change'),
+    before: () => console.log('>> before change'),
+    after: () => console.log('<< after change'),
   },
   nomatch: {
     redirect: '/',

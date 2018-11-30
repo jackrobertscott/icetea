@@ -13,7 +13,7 @@ export default class FAQ extends Component {
   componentDidMount() {
     this.interval = setInterval(() => {
       setAuthInstance.execute({ data: { time: Date.now() } });
-    }, 1000);
+    }, 3000);
     this.unwatch = setAuthInstance.watch({
       data: ({ data: { time } }) => {
         authStore.update({ userId: String(time) });

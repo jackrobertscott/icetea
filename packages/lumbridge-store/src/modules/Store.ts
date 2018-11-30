@@ -44,6 +44,7 @@ export default class Store {
   private actions: IActions;
   private currentState: IState;
   private currentErrors: IErrors;
+  private defaultSchema: ISchema;
   private watchSets: Map<number, IWatchable>;
 
   constructor(config: IConfig) {
@@ -59,6 +60,7 @@ export default class Store {
     this.generateState({});
     this.generateErrors();
     this.dispatch = this.createDispatches();
+    this.defaultSchema = this.createDefaults();
   }
 
   public get state(): IState {
@@ -93,26 +95,22 @@ export default class Store {
   }
 
   public update(changes: IState): void {
-    this.generateState(changes, () => {
-      this.executeListeners({ state: this.currentState });
-    });
-    this.generateErrors(() => {
-      this.executeListeners({ errors: this.currentErrors });
-    });
+    this.generateState(changes, state => this.executeListeners({ state }));
+    this.generateErrors(errors => this.executeListeners({ errors }));
   }
 
-  private generateState(changes: IState, cb?: () => any): void {
+  private generateState(changes: IState, cb?: (state: IState) => any): void {
     this.currentState = {
-      ...this.defaultSchema(),
+      ...this.defaultSchema,
       ...this.currentState,
       ...changes,
     };
     if (cb) {
-      cb();
+      cb(this.currentState);
     }
   }
 
-  private generateErrors(cb?: () => any) {
+  private generateErrors(cb?: (errors: IErrors) => any) {
     this.currentErrors = Object.keys(this.schema).reduce((collection, key) => {
       const { validate } = this.schema[key];
       const issue: Error | null = validate
@@ -127,7 +125,7 @@ export default class Store {
       return collection;
     }, {});
     if (cb) {
-      cb();
+      cb(this.currentErrors);
     }
   }
 
@@ -144,18 +142,6 @@ export default class Store {
       }
     }
     return null;
-  }
-
-  private defaultSchema() {
-    return Object.keys(this.schema).reduce((collection, key) => {
-      if (this.schema[key].state) {
-        return {
-          ...collection,
-          [key]: this.schema[key].state,
-        };
-      }
-      return collection;
-    }, {});
   }
 
   private executeListeners(updates: {
@@ -189,6 +175,15 @@ export default class Store {
       return {
         ...collection,
         [key]: dispatchAction,
+      };
+    }, {});
+  }
+
+  private createDefaults(): ISchema {
+    return Object.keys(this.schema).reduce((collection, key) => {
+      return {
+        ...collection,
+        [key]: this.schema[key].state,
       };
     }, {});
   }

@@ -16,7 +16,7 @@ export default class App extends Component {
 
   componentDidMount() {
     this.unmount = authStore.watch({
-      data: data => console.log(data) || this.setState({ userId: data.userId }),
+      state: data => this.setState({ userId: data.userId }),
     });
   }
 

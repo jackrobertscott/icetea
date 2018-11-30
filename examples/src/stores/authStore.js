@@ -5,11 +5,11 @@ export default Store.create({
   schema: {
     userId: {
       state: null,
-      validate: string(),
+      validate: string().nullable(),
     },
     token: {
       state: null,
-      validate: string(),
+      validate: string().nullable(),
     },
     loggedIn: {
       state: false,
