@@ -14,7 +14,7 @@ export interface IStatus {
 export type IExecute = (...args: any[]) => object;
 
 export interface IConfig {
-  mapped: IExecute;
+  mapped?: IExecute;
   method: IMethod;
 }
 
@@ -30,7 +30,7 @@ export class Instance {
   }
 
   private config: IConfig;
-  private mapped: IExecute;
+  private mapped?: IExecute;
   private method: IMethod;
   private cache: any;
   private watchSets: Map<number, IWatchable>;
@@ -68,7 +68,7 @@ export class Instance {
     this.executeListeners({
       status: { loading: false },
     });
-    const map = this.mapped(payload);
+    const map = this.mapped ? this.mapped(payload) : { ...payload };
     // TODO: validate with "this.method.payload" schema
     const response = this.method.handler(map);
     if (!(response instanceof Promise)) {

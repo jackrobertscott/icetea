@@ -9,8 +9,9 @@ export interface IConfig {
   methods: IMethods;
 }
 
-export interface IInstances {
-  [name: string]: (map: IExecute) => Instance;
+export interface IPersistorInstanceConfig {
+  name: string;
+  map?: (map: IExecute) => Instance;
 }
 
 export default class Persistor {
@@ -18,7 +19,6 @@ export default class Persistor {
     return new Persistor(config);
   }
 
-  public instance: IInstances;
   private config: IConfig;
   private methods: IMethods;
 
@@ -27,17 +27,19 @@ export default class Persistor {
     expect.type('config.methods', config.methods, 'object');
     this.config = { ...config };
     this.methods = this.config.methods;
-    this.instance = this.createInstances();
   }
 
-  private createInstances(): IInstances {
-    return Object.keys(this.methods).reduce((collection, key) => {
-      const createInstance = (map: IExecute) =>
-        Instance.create({ mapped: map, method: this.methods[key] });
-      return {
-        ...collection,
-        [key]: createInstance,
-      };
-    }, {});
+  public instance(config: IPersistorInstanceConfig) {
+    expect.type('instance.config.map', config.map, 'function', true);
+    const method = this.methods[config.name];
+    if (!method) {
+      const options: string = Object.keys(this.methods).join(', ');
+      throw new Error(
+        `The method "${
+          config.name
+        }" does not exist on persistor (options are: [${options}]).`
+      );
+    }
+    return Instance.create({ mapped: config.map, method });
   }
 }

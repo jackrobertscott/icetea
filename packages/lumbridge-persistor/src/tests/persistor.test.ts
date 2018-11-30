@@ -30,14 +30,7 @@ describe('const persistor = Persistor.create()', () => {
     const persistor = Persistor.create({ methods: {} });
     expect(persistor).to.be.instanceOf(Persistor);
   });
-  describe('persistor.instance', () => {
-    it('should be filled properties which match the config method names', () => {
-      const fakePersistor = createFakePersistor();
-      const keys = Object.keys(fakePersistor.instance);
-      expect(keys.length).to.equal(1);
-    });
-  });
-  describe('const instance = persistor.instance[methodName]()', () => {
+  describe('const instance = persistor.instance()', () => {
     it.skip('should create an instance of the Instance class');
   });
   describe('instance.watch()', () => {

@@ -99,14 +99,17 @@ Create a persistor method with more specific properties to the method being call
 ```js
 const serverPersistor = Persistor.create(config);
 
-const meQueryMethod = serverPersistor.instance.query(({ variables }) => ({
-  query: `
-    query($id: String) {
-      me(id: $id) { name }
-    }
-  `,
-  variables,
-}));
+const meQueryMethod = serverPersistor.instance({
+  name: 'query',
+  map: ({ variables }) => ({
+    query: `
+      query($id: String) {
+        me(id: $id) { name }
+      }
+    `,
+    variables,
+  })
+});
 ```
 
 **Note:** the callback provided is used to map the variables passed to the `meQueryMethod.execute` function to the handler payload.
@@ -176,8 +179,8 @@ This will connect a persistor method to the scope. Connecting a persistor method
 
 ```js
 const persistor = Persistor.create({});
-const persistorFirstMethod = persistor.instance.exampleQuery(() => {});
-const persistorSecondMethod = persistor.instance.otherQuery(() => {});
+const persistorFirstMethod = persistor.instance({ name: 'exampleQuery' });
+const persistorSecondMethod = persistor.instance({ name: 'otherQuery' });
 const scope = Scope.create({});
 
 scope.absorb(persistorFirstMethod);
