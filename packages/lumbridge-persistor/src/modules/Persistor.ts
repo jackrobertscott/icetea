@@ -1,5 +1,5 @@
 import { expect } from 'lumbridge-core';
-import { Instance, IExecute, IMethod } from './Instance';
+import Instance, { IExecute, IMethod } from './Instance';
 
 export interface IMethods {
   [name: string]: IMethod;

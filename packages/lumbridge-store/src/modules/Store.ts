@@ -1,4 +1,4 @@
-import { expect } from 'lumbridge-core';
+import { expect, Watchable } from 'lumbridge-core';
 
 export interface IState {
   [key: string]: any;
@@ -15,6 +15,10 @@ export interface ISchema {
   };
 }
 
+export interface IDispatches {
+  [name: string]: (...args: any[]) => void;
+}
+
 export interface IActions {
   [name: string]: (...args: any[]) => IState;
 }
@@ -24,16 +28,17 @@ export interface IConfig {
   actions?: IActions;
 }
 
-export interface IWatchable {
-  state?: (state: IState) => any;
-  errors?: (errors: IErrors) => any;
+export interface IStoreWatcher {
+  state?: (state: IState) => void;
+  errors?: (errors: IErrors) => void;
 }
 
-export interface IDispatches {
-  [name: string]: (...args: any[]) => void;
+export interface IStoreUpdates {
+  state?: IState;
+  errors?: IErrors;
 }
 
-export default class Store {
+export default class Store extends Watchable<IStoreWatcher, IStoreUpdates> {
   public static create(config: IConfig): Store {
     return new Store(config);
   }
@@ -45,16 +50,15 @@ export default class Store {
   private currentState: IState;
   private currentErrors: IErrors;
   private defaultSchema: ISchema;
-  private watchSets: Map<number, IWatchable>;
 
   constructor(config: IConfig) {
+    super();
     expect.type('config', config, 'object');
     expect.type('config.schema', config.schema, 'object');
     expect.type('config.actions', config.actions, 'object', true);
     this.config = { ...config };
     this.schema = this.config.schema;
     this.actions = this.config.actions || {};
-    this.watchSets = new Map();
     this.currentState = {};
     this.currentErrors = {};
     this.generateState({});
@@ -71,32 +75,15 @@ export default class Store {
     return { ...this.currentErrors };
   }
 
-  public watch(watchable: IWatchable): () => void {
-    if (watchable.state && typeof watchable.state !== 'function') {
-      throw new Error(
-        'Expected "state" in "store.watch({ state })" to be a function.'
-      );
-    }
-    if (watchable.errors && typeof watchable.errors !== 'function') {
-      throw new Error(
-        'Expected "errors" in "store.watch({ errors })" to be a function.'
-      );
-    }
-    let id: number;
-    do {
-      id = Math.random();
-    } while (this.watchSets.has(id));
-    this.watchSets.set(id, watchable);
-    return () => {
-      if (this.watchSets.has(id)) {
-        this.watchSets.delete(id);
-      }
-    };
+  public watch(watchable: IStoreWatcher): () => void {
+    expect.type('watchable.state', watchable.state, 'function', true);
+    expect.type('watchable.errors', watchable.errors, 'function', true);
+    return super.watch(watchable);
   }
 
   public update(changes: IState): void {
-    this.generateState(changes, state => this.executeListeners({ state }));
-    this.generateErrors(errors => this.executeListeners({ errors }));
+    this.generateState(changes, state => this.batch({ state }));
+    this.generateErrors(errors => this.batch({ errors }));
   }
 
   private generateState(changes: IState, cb?: (state: IState) => any): void {
@@ -142,30 +129,6 @@ export default class Store {
       }
     }
     return null;
-  }
-
-  private executeListeners(updates: {
-    state?: IState;
-    errors?: IErrors;
-  }): void {
-    this.watchSets.forEach((watchable: IWatchable) => {
-      this.executeIsolation(watchable, updates);
-    });
-  }
-
-  private executeIsolation(
-    watchable: IWatchable,
-    updates: {
-      state?: IState;
-      errors?: IErrors;
-    }
-  ): void {
-    if (watchable.state !== undefined && updates.state !== undefined) {
-      watchable.state({ ...updates.state });
-    }
-    if (watchable.errors !== undefined && updates.errors !== undefined) {
-      watchable.errors({ ...updates.errors });
-    }
   }
 
   private createDispatches(): IDispatches {

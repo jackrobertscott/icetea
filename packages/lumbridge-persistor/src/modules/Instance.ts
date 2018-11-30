@@ -1,4 +1,4 @@
-import { expect } from 'lumbridge-core';
+import { expect, Watchable } from 'lumbridge-core';
 
 export interface IMethod {
   payload: {
@@ -18,13 +18,22 @@ export interface IConfig {
   method: IMethod;
 }
 
-export interface IWatchable {
-  data?: (data: any) => void;
+export interface IInstanceWatcher {
+  data?: (data: object) => void;
   catch?: (error: Error) => void;
   status?: (status: IStatus) => void;
 }
 
-export class Instance {
+export interface IInstanceUpdates {
+  data?: any;
+  error?: Error;
+  status?: IStatus;
+}
+
+export default class Instance extends Watchable<
+  IInstanceWatcher,
+  IInstanceUpdates
+> {
   public static create(config: IConfig): Instance {
     return new Instance(config);
   }
@@ -33,39 +42,30 @@ export class Instance {
   private mapped?: IExecute;
   private method: IMethod;
   private cache: any;
-  private watchSets: Map<number, IWatchable>;
 
   constructor(config: IConfig) {
+    super();
     expect.type('config', config, 'object');
     expect.type('config.mapped', config.mapped, 'function');
     expect.type('config.method', config.method, 'object');
     this.config = { ...config };
     this.mapped = this.config.mapped;
     this.method = this.config.method;
-    this.watchSets = new Map();
   }
 
-  public watch(watchable: IWatchable): () => void {
+  public watch(watchable: IInstanceWatcher): () => void {
     expect.type('watchable.data', watchable.data, 'function', true);
     expect.type('watchable.catch', watchable.catch, 'function', true);
     expect.type('watchable.status', watchable.status, 'function', true);
-    let id: number;
-    do {
-      id = Math.random();
-    } while (this.watchSets.has(id));
-    this.watchSets.set(id, watchable);
+    const unwatch = super.watch(watchable);
     if (this.cache) {
-      this.executeIsolation(watchable, { data: this.cache });
+      this.isolation(watchable, { data: this.cache });
     }
-    return () => {
-      if (this.watchSets.has(id)) {
-        this.watchSets.delete(id);
-      }
-    };
+    return unwatch;
   }
 
   public execute(payload: any) {
-    this.executeListeners({
+    this.batch({
       status: { loading: false },
     });
     const map = this.mapped ? this.mapped(payload) : { ...payload };
@@ -78,48 +78,17 @@ export class Instance {
     }
     response
       .then(data => {
-        this.cache = data;
-        this.executeListeners({
+        this.batch({
           data,
           status: { loading: false },
         });
+        this.cache = data;
       })
       .catch(error => {
-        this.executeListeners({
+        this.batch({
           error,
           status: { loading: false },
         });
       });
-  }
-
-  private executeListeners(updates: {
-    data?: any;
-    error?: Error;
-    status?: IStatus;
-  }): void {
-    this.watchSets.forEach((watchable: IWatchable) => {
-      this.executeIsolation(watchable, updates);
-    });
-  }
-
-  private executeIsolation(
-    watchable: IWatchable,
-    updates: {
-      data?: any;
-      error?: Error;
-      status?: IStatus;
-    }
-  ): void {
-    if (watchable.data !== undefined && updates.data !== undefined) {
-      const clone =
-        typeof updates.data === 'object' ? { ...updates.data } : updates.data;
-      watchable.data(clone);
-    }
-    if (watchable.catch !== undefined && updates.error !== undefined) {
-      watchable.catch(updates.error);
-    }
-    if (watchable.status !== undefined && updates.status !== undefined) {
-      watchable.status(updates.status);
-    }
   }
 }
