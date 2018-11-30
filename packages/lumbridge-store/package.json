@@ -1,6 +1,6 @@
 {
   "name": "lumbridge-store",
-  "version": "0.0.4",
+  "version": "0.1.0",
   "private": false,
   "description": "Improved logic management for React apps.",
   "author": {
@@ -23,7 +23,7 @@
     "compile": "tsc"
   },
   "dependencies": {
-    "lumbridge-core": "^0.0.4"
+    "lumbridge-core": "^0.1.0"
   },
   "devDependencies": {
     "@types/chai": "^4.1.7",

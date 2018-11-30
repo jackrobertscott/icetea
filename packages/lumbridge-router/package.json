@@ -1,6 +1,6 @@
 {
   "name": "lumbridge-router",
-  "version": "0.0.4",
+  "version": "0.1.0",
   "private": false,
   "description": "Improved logic management for React apps.",
   "author": {
@@ -27,7 +27,7 @@
     "@types/path-to-regexp": "^1.7.0",
     "@types/react": "^16.7.7",
     "history": "^4.7.2",
-    "lumbridge-core": "^0.0.4",
+    "lumbridge-core": "^0.1.0",
     "path-to-regexp": "^2.4.0",
     "react": "^16.6.3"
   },
