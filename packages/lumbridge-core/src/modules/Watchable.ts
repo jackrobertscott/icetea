@@ -13,12 +13,12 @@ export default class Watchable<W extends IWatcher, U extends IUpdates> {
     this.watchers = new Map();
   }
 
-  public watch(watchable: W): () => void {
+  public watch(watcher: W): () => void {
     let id: number;
     do {
       id = Math.random();
     } while (this.watchers.has(id));
-    this.watchers.set(id, watchable);
+    this.watchers.set(id, watcher);
     return () => {
       if (this.watchers.has(id)) {
         this.watchers.delete(id);

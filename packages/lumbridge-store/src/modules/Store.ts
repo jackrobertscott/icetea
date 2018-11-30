@@ -75,10 +75,10 @@ export default class Store extends Watchable<IStoreWatcher, IStoreUpdates> {
     return { ...this.currentErrors };
   }
 
-  public watch(watchable: IStoreWatcher): () => void {
-    expect.type('watchable.state', watchable.state, 'function', true);
-    expect.type('watchable.errors', watchable.errors, 'function', true);
-    return super.watch(watchable);
+  public watch(watcher: IStoreWatcher): () => void {
+    expect.type('watcher.state', watcher.state, 'function', true);
+    expect.type('watcher.errors', watcher.errors, 'function', true);
+    return super.watch(watcher);
   }
 
   public update(changes: IState): void {

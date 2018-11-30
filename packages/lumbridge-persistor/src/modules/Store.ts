@@ -41,13 +41,13 @@ export default class Scope extends Watchable<
     });
   }
 
-  public watch(watchable: IInstanceWatcher): () => void {
-    expect.type('watchable.data', watchable.data, 'function', true);
-    expect.type('watchable.catch', watchable.catch, 'function', true);
-    expect.type('watchable.status', watchable.status, 'function', true);
-    const unwatch = super.watch(watchable);
+  public watch(watcher: IInstanceWatcher): () => void {
+    expect.type('watcher.data', watcher.data, 'function', true);
+    expect.type('watcher.catch', watcher.catch, 'function', true);
+    expect.type('watcher.status', watcher.status, 'function', true);
+    const unwatch = super.watch(watcher);
     if (this.cache) {
-      this.isolation(watchable, { data: this.cache });
+      this.isolation(watcher, { data: this.cache });
     }
     return unwatch;
   }
