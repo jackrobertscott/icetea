@@ -101,7 +101,11 @@ export default class Store extends Watchable<IStoreWatcher, IStoreUpdates> {
     this.currentErrors = Object.keys(this.schema).reduce((collection, key) => {
       const { validate } = this.schema[key];
       const issue: Error | null = validate
-        ? this.validateProp(validate, this.currentState[key], key)
+        ? expect.validate(
+            validate,
+            this.currentState[key],
+            `The ${key} is not valid.`
+          )
         : null;
       if (issue) {
         return {
@@ -114,21 +118,6 @@ export default class Store extends Watchable<IStoreWatcher, IStoreUpdates> {
     if (cb) {
       cb(this.currentErrors);
     }
-  }
-
-  private validateProp(validate: any, value: any, key: string): Error | null {
-    if (validate.validateSync) {
-      try {
-        validate.validateSync(value);
-      } catch (error) {
-        return error;
-      }
-    } else if (typeof validate === 'function') {
-      if (!validate(value)) {
-        return new Error(`The ${key} is not valid.`);
-      }
-    }
-    return null;
   }
 
   private createDispatches(): IDispatches {

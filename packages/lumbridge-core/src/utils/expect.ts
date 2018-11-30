@@ -14,4 +14,18 @@ export default {
       }
     }
   },
+  validate(validate: any, value: any, message: string): Error | null {
+    if (validate.validateSync) {
+      try {
+        validate.validateSync(value);
+      } catch (error) {
+        return error;
+      }
+    } else if (typeof validate === 'function') {
+      if (!validate(value)) {
+        return new Error(message);
+      }
+    }
+    return null;
+  },
 };

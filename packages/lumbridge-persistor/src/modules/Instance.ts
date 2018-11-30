@@ -42,6 +42,7 @@ export default class Instance extends Watchable<
   private mapped?: IExecute;
   private method: IMethod;
   private cache: any;
+  private payloadLast: any;
 
   constructor(config: IConfig) {
     super();
@@ -64,12 +65,19 @@ export default class Instance extends Watchable<
     return unwatch;
   }
 
-  public execute(payload: any) {
-    this.batch({
-      status: { loading: false },
-    });
+  public refresh() {
+    this.execute(this.payloadLast);
+  }
+
+  public execute(payload: any = {}): void {
     const map = this.mapped ? this.mapped(payload) : { ...payload };
-    // TODO: validate with "this.method.payload" schema
+    const issue = this.generateErrors(map);
+    if (issue) {
+      this.batch({ catch: issue });
+      return;
+    }
+    this.payloadLast = payload;
+    this.batch({ status: { loading: true } });
     const response = this.method.handler(map);
     if (!(response instanceof Promise)) {
       throw new Error(
@@ -90,5 +98,23 @@ export default class Instance extends Watchable<
           status: { loading: false },
         });
       });
+  }
+
+  private generateErrors(payload: any = {}): Error | null {
+    const issues: Error[] = Object.keys(this.method.payload)
+      .map(key => {
+        return expect.validate(
+          this.method.payload[key],
+          payload[key],
+          `The ${key} is not valid.`
+        );
+      })
+      .filter(error => error) as Error[];
+    if (issues.length) {
+      const error: any = new Error('The payload is not valid.');
+      error.errors = issues;
+      return error;
+    }
+    return null;
   }
 }
