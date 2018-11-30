@@ -30,9 +30,9 @@ export default class Scope extends Watchable<
 
   public absorb(instance: Instance, depends: boolean = false): void {
     const unwatch = instance.watch({
-      data: console.log,
-      catch: console.log,
-      status: console.log,
+      data: data => this.batch({ data }),
+      catch: error => this.batch({ catch: error }),
+      status: status => this.batch({ status }),
     });
     this.items.push({
       unwatch,
@@ -45,10 +45,6 @@ export default class Scope extends Watchable<
     expect.type('watcher.data', watcher.data, 'function', true);
     expect.type('watcher.catch', watcher.catch, 'function', true);
     expect.type('watcher.status', watcher.status, 'function', true);
-    const unwatch = super.watch(watcher);
-    if (this.cache) {
-      this.isolation(watcher, { data: this.cache });
-    }
-    return unwatch;
+    return super.watch(watcher);
   }
 }

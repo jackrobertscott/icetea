@@ -26,7 +26,7 @@ export interface IInstanceWatcher {
 
 export interface IInstanceUpdates {
   data?: any;
-  error?: Error;
+  catch?: Error;
   status?: IStatus;
 }
 
@@ -78,15 +78,15 @@ export default class Instance extends Watchable<
     }
     response
       .then(data => {
+        this.cache = data;
         this.batch({
           data,
           status: { loading: false },
         });
-        this.cache = data;
       })
       .catch(error => {
         this.batch({
-          error,
+          catch: error,
           status: { loading: false },
         });
       });
