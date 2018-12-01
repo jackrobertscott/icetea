@@ -61,10 +61,10 @@ export default class Store extends Watchable<IStoreWatcher, IStoreUpdates> {
     this.actions = this.config.actions || {};
     this.currentState = {};
     this.currentErrors = {};
-    this.generateState({});
-    this.generateErrors();
     this.dispatch = this.createDispatches();
     this.defaultSchema = this.createDefaults();
+    this.generateState({});
+    this.generateErrors();
   }
 
   public get state(): IState {
@@ -73,6 +73,13 @@ export default class Store extends Watchable<IStoreWatcher, IStoreUpdates> {
 
   public get errors(): IState {
     return { ...this.currentErrors };
+  }
+
+  public reset(): void {
+    this.currentState = {
+      ...this.defaultSchema,
+    };
+    this.update({});
   }
 
   public watch(watcher: IStoreWatcher): () => void {
