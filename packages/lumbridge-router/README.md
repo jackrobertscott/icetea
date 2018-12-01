@@ -112,6 +112,9 @@ const router = Router.create({
   change: {
     // handlers...
   },
+  routes: {
+    // code...
+  },
 });
 ```
 
@@ -122,6 +125,9 @@ const router = Router.create({
   change: {
     before: () => console.log('The route is about to change.'),
     after: () => console.log('The route has changed.'),
+  },
+  routes: {
+    // code...
   },
 });
 ```
@@ -141,6 +147,9 @@ These values are used when *no* routes are matched by the routes.
 ```js
 const router = Router.create({
   nomatch: {
+    // redirect...
+  },
+  routes: {
     // code...
   },
 });
@@ -152,6 +161,9 @@ Example:
 const router = Router.create({
   nomatch: {
     redirect: '/not-found',
+  },
+  routes: {
+    // code...
   },
 });
 ```

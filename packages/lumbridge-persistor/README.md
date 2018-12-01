@@ -76,11 +76,11 @@ const serverPersistor = Persistor.create({
     },
     mutate: {
       payload: {
-        query: string().required(),
+        mutate: string().required(),
         variables: object(),
       },
-      handler: ({ query, variables }) => {
-        return graphQLClient.mutate({ mutation: query, variables })
+      handler: ({ mutate, variables }) => {
+        return graphQLClient.mutate({ mutation: mutate, variables })
           .then(({ data }) => data);
       },
     },
@@ -90,37 +90,40 @@ const serverPersistor = Persistor.create({
 
 Properties:
 
-- `[methodName].payload` [object]: a set of validations used to check that the payload is the correct shape and type.
-- `[methodName].handler` [func]: a function which collects and returns data in a `Promise`.
+- `methods[methodName].payload` [object]: a set of validations used to check that the payload is the correct shape and type.
+- `methods[methodName].handler` [func]: a function which collects and returns data in a `Promise`.
 
-**Note:** make sure your `handler` function returns a promise or it will not work e.g. `new Promise((resolve, reject) => resolve(data))`.
+**Note:** make sure your `handler` function returns a promise (e.g. `new Promise((resolve, reject) => resolve(data))`) or it will not work.
 
-#### `persistor.instance[methodName]`
+#### `persistor.instance`
 
 - Type: `func`
-- Returns: `persistorMethod`
+- Returns: `persistorInstance`
 
 Create a persistor method with more specific properties to the method being called.
 
 ```js
 const serverPersistor = Persistor.create(config);
 
-const meQueryMethod = serverPersistor.instance({
+const meQueryInstance = serverPersistor.instance({
   name: 'query',
-  map: ({ variables }) => ({
+  map: ({ ...args }) => ({
+    ...args,
     query: `
       query($id: String) {
         me(id: $id) { name }
       }
     `,
-    variables,
   })
 });
 ```
 
-**Note:** the callback provided is used to map the variables passed to the `meQueryMethod.execute` function to the handler payload.
+Properties:
 
-#### `persistorMethod.execute`
+- `name` [string]: the key which corresponding to the persistor method.
+- `map` [func]: the callback provided is used to map the variables passed to the `meQueryInstance.execute` function to the handler payload.
+
+#### `persistorInstance.execute`
 
 - Type: `func`
 - Returns: `void`
@@ -128,14 +131,18 @@ const meQueryMethod = serverPersistor.instance({
 Execute the persistor method with parameters (which you specify).
 
 ```js
-meQueryMethod.execute({
+meQueryInstance.execute({
   variables: { id },
 });
 ```
 
+Properties:
+
+- `[payloadProperty]` [any]: a set of payload properties which are validated and then provided to the corresponding persistor method.
+
 **Note:** by seperating the functionality of *executing* an method and *receiving* that method's data, it enables you to more efficiently re-query the data without the code overhead. A good example would be when you wish to load a list of items that will change based upon a search filter. The list can be requeried easily while you only have to handle how that data is handled only once.
 
-#### `persistorMethod.watch`
+#### `persistorInstance.watch`
 
 - Type: `func`
 - Returns: `unwatch`
@@ -143,14 +150,26 @@ meQueryMethod.execute({
 Listen to any updates in the persistor as the persistor instance executes.
 
 ```js
-const unwatch = meQueryMethod.watch({
+const unwatchData = meQueryInstance.watch({
   done: data => setData(data),
-  catch: error => setError(error),
-  status: loading => setLoading(loading),
+  status: ({ loading }) => setLoading(loading),
 });
 
-const componentWillUnmount = () => unwatch();
+const unwatchErrors = meQueryInstance.watch({
+  catch: error => setError(error),
+});
+
+const componentWillUnmount = () => {
+  unwatchData();
+  unwatchErrors();
+};
 ```
+
+Properties:
+
+- `done` [func]: this function is called whenever the instance resolves with data.
+- `catch` [func]: this function is called whenever there is an error in the persistor.
+- `status` [func]: this function is called when there is an update in the state of the instance.
 
 **Note:** when you start watching a persistor method, don't forget to call the `unwatch` function when the component unmounts and you stop listening for changes (see above code). If you don't unwatch, then you might cause a memory leak.
 
@@ -158,11 +177,7 @@ const componentWillUnmount = () => unwatch();
 
 It is often the case that a persistor will update application data in one location of the app, which may then lead to incorrect information shown in another location of the app.
 
-For example:
-
-Imagine being on a user settings page and changing a person's name. If the person's name is also shown in the top bar of the app, you will need to update this to the correct information after saving the person's name.
-
-Using a store can be a way of solving this problem.
+For example, imagine being on a user settings page and changing a person's name. If the person's name is also shown in the top bar of the app, you will need to update this to the correct information after saving the person's name. Using a store can be a way of solving this problem.
 
 However, sometimes knowing which data need to change is not clearly known. For example, imagine instead of showing a person's name in the top bar, it shows the number of videos a person has watched (on a video watching app). In this case, you can only "guess" the information if you use a store. A better way would be to requery the number of videos watched at the time that another query resolves and changes that.
 
@@ -185,17 +200,17 @@ This will connect a persistor method to the scope. Connecting a persistor method
 
 ```js
 const persistor = Persistor.create({});
-const persistorFirstMethod = persistor.instance({ name: 'exampleQuery' });
-const persistorSecondMethod = persistor.instance({ name: 'otherQuery' });
-const scope = Scope.create({});
+const persistorFirstInstance = persistor.instance({ name: 'exampleQuery' });
+const persistorSecondInstance = persistor.instance({ name: 'otherQuery' });
 
-scope.absorb(persistorFirstMethod);
-scope.absorb(persistorSecondMethod, true);
+const scope = Scope.create({});
+scope.absorb(persistorFirstInstance);
+scope.absorb(persistorSecondInstance, true);
 ```
 
 Parameters:
 
-- `arguments[0]` [persistorMethod]: the persistor method to add to the scope.
+- `arguments[0]` [persistorInstance]: the persistor method to add to the scope.
 - `arguments[1]` [boolean]: if this is `true` then the method will re-run the last execution after *any* of the other connected methods run successfully.
 
 #### `scope.watch`
@@ -210,6 +225,12 @@ const unwatch = scope.watch({
   catch: error => console.warn(error),
 });
 ```
+
+Properties:
+
+- `done` [func]: this function is called whenever the instance resolves with data.
+- `catch` [func]: this function is called whenever there is an error in the persistor.
+- `status` [func]: this function is called when there is an update in the state of the instance.
 
 **Note:** when you start watching a scope, don't forget to call the `unwatch` function when you don't need it any more. If you don't unwatch, then you might cause a memory leak.
 
