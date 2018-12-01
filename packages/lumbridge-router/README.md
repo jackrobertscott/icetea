@@ -30,20 +30,6 @@ const router = Router.create({
 
 ## API
 
-### Setup
-
-In order for the router to work, you first need to wrap your application with the router provider.
-
-```js
-const App = () => (
-  <Router.Provider>
-    <div>Your other app code goes here...</div>
-  </Router.Provider>
-);
-
-ReactDOM.render(App, document.getElementById('root'));
-```
-
 ### Config
 
 Each router is configured with a `config` object:
