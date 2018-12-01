@@ -267,6 +267,20 @@ const usersRouter = Router.create({
 
 The above code only allows users to leave when there are no errors in the store.
 
+#### `store.reset`
+
+- Type: `func`
+
+This will reset the store to the default schema.
+
+```js
+const userStore = Store.create(config);
+
+const logout = () => userStore.reset();
+```
+
+**Note:** this does *not* unsubscribe from any of the watch functions.
+
 ## Packages
 
 - [lumbridge](https://github.com/jackrobertscott/lumbridge/tree/master/packages/lumbridge)
