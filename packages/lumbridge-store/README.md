@@ -35,6 +35,10 @@ const store = Store.create({
 Each store is configured with a `config` object:
 
 ```js
+const config = {
+  // options...
+};
+
 const store = Store.create(config);
 ```
 
@@ -85,8 +89,8 @@ const store = Store.create({
 
 Properties:
 
-- `[propName].validate` [func]: a function which is passed the value to check and should return `true` if it is valid.
-- `[propName].default` [any]: a default value set to the property.
+- `schema[propName].state` [any]: the default value of this property.
+- `schema[propName].validate` [func]: a function which is passed the value to check and should return `true` if it is valid.
 
 #### `config.actions`
 
@@ -97,6 +101,9 @@ The actions object is used for more complex state manipulation functions. Howeve
 
 ```js
 const store = Store.create({
+  schema: {
+    // properties...
+  },
   actions: {
     // actions...
   },
@@ -107,6 +114,9 @@ Example:
 
 ```js
 const store = Store.create({
+  schema: {
+    // token, userId, loggedIn...
+  },
   actions: {
     loginUser: ({ token, userId }) => ({
       token,
@@ -116,39 +126,45 @@ const store = Store.create({
   },
 });
 
+/**
+ * Then you can execute the action...
+ */
 store.dispatch.loginUser({ token, userId });
 ```
 
 Properties:
 
-- `[actionName]` [func]: actions enable you to manipulate multiple store values in one method.
+- `actions[actionName]` [func]: actions enable you to manipulate multiple store values in one method. This function must return an object which will be used to *partially* update the state.
 
 ### Usage
+
+There are a number of methods you can use to update and extract the values of the store.
 
 #### `store.update`
 
 - Type: `func`
 - Returns: `void`
 
-Make a partial update to the values of the store.
+Make a *partial* update to the values of the store.
 
 ```js
-import { string } from 'yup';
+import { string, boolean } from 'yup';
 
 const store = Store.create({
   schema: {
-    example: {
-      state: '',
-      validate: string(),
+    fullName: {
+      state: null,
+      validate: string().nullable(),
     },
-    other: {
-      // code...
+    isMember: {
+      state: false,
+      validate: boolean().required(),
     },
   },
-})
+});
 
 store.update({
-  example: 'Hello world!',
+  fullName: 'Jack Scott',
 });
 ```
 
@@ -167,27 +183,27 @@ const store = Store.create({
     // code...
   },
   actions: {
-    doSomething: ({ name, isInFalador }) => ({
-      questName: name,
-      doingQuest: isInFalador,
+    startQuest: ({ name, inFalador }) => ({
+      questName: inFalador ? `${name} is in Falador!` : `${name} is *not* in Falador!`,
+      doingQuest: true,
     }),
   },
 })
 
-store.dispatch.doSomething({
-  name: 'Hello world!',
-  isInFalador: true,
+store.dispatch.startQuest({
+  name: 'Jack Scott',
+  inFalador: true,
 });
 ```
 
-Notice how the `doSomething` action is being set in `actions` and then is being dispatched later on in the code.
+Notice how the `startQuest` action is being set in `actions` and then is being *dispatched* by the `store` later in the code.
 
 #### `store.watch`
 
 - Type: `func`
 - Returns: `unwatch`
 
-Pass a listener function into this in order to get informative updates on changes in the store.
+Pass optional listener functions into this in order to get informative updates on changes in the store.
 
 ```js
 const store = Store.create(config);
@@ -206,12 +222,12 @@ const componentWillUnmount = () => unwatch();
 
 - Type: `object`
 
-This property gives you access to the current values of the store.
+This property gives you access to the internal store values.
 
 ```js
 const authStore = Store.create(config);
 
-const authRouter = Router.create({
+const mainRouter = Router.create({
   routes: {
     home: {
       path: '/',
@@ -225,16 +241,16 @@ const authRouter = Router.create({
 });
 ```
 
-The above code will only allow the use to access the home page when they are logged in.
+The above code ([using the lumbridge-router](https://github.com/jackrobertscott/lumbridge/tree/master/packages/lumbridge-router)) will only allow the use to access the home page when they are logged in.
 
 #### `store.errors`
 
 - Type: `object`
 
-This property gives you access to any errors between the state and the validators.
+This property gives you access to errors between the state and the validators.
 
 ```js
-const userFormStore = Store.create(config);
+const userStore = Store.create(config);
 
 const usersRouter = Router.create({
   routes: {
@@ -242,7 +258,7 @@ const usersRouter = Router.create({
       path: '/update',
       component: UserUpdateForm,
       leave: {
-        before: () => !userFormStore.errors.length,
+        before: () => !Object.keys(userStore.errors).length,
       },
     },
   },

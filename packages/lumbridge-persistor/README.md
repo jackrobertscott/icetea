@@ -35,6 +35,10 @@ const persistor = Persistor.create({
 Each persistor is configured with a `config` object:
 
 ```js
+const config = {
+  // options...
+};
+
 const persistor = Persistor.create(config);
 ```
 

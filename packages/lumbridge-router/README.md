@@ -49,6 +49,10 @@ ReactDOM.render(App, document.getElementById('root'));
 Each router is configured with a `config` object:
 
 ```js
+const config = {
+  // options...
+};
+
 const router = Router.create(config);
 ```
 
