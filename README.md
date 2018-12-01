@@ -2,6 +2,8 @@
 
 > 🏰 React application management made simple.
 
+[![npm](https://img.shields.io/npm/v/lumbridge.svg)](https://www.npmjs.com/package/lumbridge) ![GitHub](https://img.shields.io/github/license/mashape/apistatus.svg) [![react](https://img.shields.io/badge/framework-react-blue.svg)](https://github.com/facebook/react)
+
 ## Main Features
 
 - `Router`: Easy to use route guards, enter and leave hooks, simplified route structure to improve maintainability.

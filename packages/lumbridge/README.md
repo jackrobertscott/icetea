@@ -2,6 +2,8 @@
 
 > 🏰 React application management made simple.
 
+[![npm](https://img.shields.io/npm/v/lumbridge.svg)](https://www.npmjs.com/package/lumbridge) ![GitHub](https://img.shields.io/github/license/mashape/apistatus.svg) [![react](https://img.shields.io/badge/framework-react-blue.svg)](https://github.com/facebook/react)
+
 ## Installation
 
 Using npm:
@@ -20,9 +22,9 @@ Then import the helper classes where needed.
 
 ## Overview
 
-This package exports all of the lumbridge helper classes.
+[See main repository.](https://github.com/jackrobertscott/lumbridge)
 
-[See overview.](https://github.com/jackrobertscott/lumbridge/tree/master/packages/lumbridge)
+This package exports all of the lumbridge helper classes.
 
 ### Router
 

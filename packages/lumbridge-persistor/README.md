@@ -2,9 +2,11 @@
 
 > 🏰 React application management made simple.
 
+[![npm](https://img.shields.io/npm/v/lumbridge.svg)](https://www.npmjs.com/package/lumbridge) ![GitHub](https://img.shields.io/github/license/mashape/apistatus.svg) [![react](https://img.shields.io/badge/framework-react-blue.svg)](https://github.com/facebook/react)
+
 ## Installation
 
-Using npm:
+Using [npm](https://www.npmjs.com/package/lumbridge-persistor):
 
 ```shell
 npm i --save lumbridge-persistor
