@@ -36,7 +36,7 @@ const authStore = Store.create({
 
 **Note:** lumbridge components require *no additional setup* to start using in an existing React app.
 
-> [🚩 **Get started now.**](https://github.com/jackrobertscott/lumbridge/tree/master/packages/lumbridge)
+> 🚩 [**Get started now.**](https://github.com/jackrobertscott/lumbridge/tree/master/packages/lumbridge)
 
 ## Packages
 
