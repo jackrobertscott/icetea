@@ -45,7 +45,7 @@ export default class Router {
     this.routes = this.createRoutes();
   }
 
-  public setup(): React.ReactNode {
+  public compile(): React.ReactNode {
     return () => (
       <Route
         history={history}

@@ -4,7 +4,7 @@ import Main from './layouts/Main';
 import mainRouter from './routes/mainRouter';
 import authStore from './stores/authStore';
 
-const Routes = mainRouter.setup();
+const Routes = mainRouter.compile();
 
 export default class App extends Component {
   constructor(...args) {
