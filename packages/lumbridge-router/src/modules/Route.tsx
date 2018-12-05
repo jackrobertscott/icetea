@@ -20,6 +20,7 @@ export interface IRouteState {
 
 export default class Route extends React.Component<IRouteProps, IRouteState> {
   private unlisten?: () => void;
+  private backup: boolean;
 
   constructor(props: IRouteProps) {
     super(props);
@@ -29,17 +30,26 @@ export default class Route extends React.Component<IRouteProps, IRouteState> {
       currentRoute: props.retrieveCurrentRoute(location.pathname),
       lastRoute: null,
     };
+    this.backup = false;
   }
 
   public componentDidMount() {
-    this.unlisten = this.props.history.listen((location: ILocation) => {
-      const oldRoute = this.state.currentRoute;
-      const newRoute = this.props.retrieveCurrentRoute(location.pathname);
-      if (oldRoute !== newRoute) {
+    const { history, retrieveCurrentRoute } = this.props;
+    this.unlisten = history.listen((location: ILocation) => {
+      const { currentRoute } = this.state;
+      if (this.backup) {
+        this.backup = false;
+      } else if (currentRoute && !this.runBeforeLeaveHooks(currentRoute)) {
+        this.backup = true;
+        history.goBack();
+        return;
+      }
+      const nextRoute = retrieveCurrentRoute(location.pathname);
+      if (currentRoute !== nextRoute) {
         this.setState({
           location,
-          lastRoute: oldRoute,
-          currentRoute: newRoute,
+          lastRoute: currentRoute,
+          currentRoute: nextRoute,
         });
       }
     });
@@ -52,19 +62,24 @@ export default class Route extends React.Component<IRouteProps, IRouteState> {
   }
 
   public render() {
-    const { currentRoute } = this.state;
+    const { currentRoute, lastRoute } = this.state;
     if (!currentRoute) {
       return this.nomatchRoute();
     }
-    if (!this.runBeforeHooks(currentRoute)) {
+    if (!this.runBeforeEnterHooks(currentRoute)) {
       return this.nomatchRoute();
     }
-    const after = () => this.runAfterHooks(currentRoute);
+    const afterEnter = () => {
+      if (lastRoute) {
+        this.runAfterLeaveHooks(lastRoute);
+      }
+      this.runAfterEnterHooks(currentRoute);
+    };
     return (
       <EventsRoute
         key={currentRoute.path}
         component={currentRoute.component}
-        after={after}
+        afterEnter={afterEnter}
       />
     );
   }
@@ -81,7 +96,7 @@ export default class Route extends React.Component<IRouteProps, IRouteState> {
     return <React.Fragment />;
   }
 
-  private runBeforeHooks(route: IRoute): boolean {
+  private runBeforeEnterHooks(route: IRoute): boolean {
     const { change } = this.props;
     const { location } = this.state;
     if (change && typeof change.before === 'function') {
@@ -97,14 +112,31 @@ export default class Route extends React.Component<IRouteProps, IRouteState> {
     return true;
   }
 
-  private runAfterHooks(route: IRoute): void {
+  private runAfterEnterHooks(route: IRoute): void {
     const { change } = this.props;
     const { location } = this.state;
-    if (route.enter && typeof route.enter.before === 'function') {
+    if (route.enter && typeof route.enter.after === 'function') {
       route.enter.after({ location });
     }
     if (change && typeof change.after === 'function') {
       change.after({ location });
+    }
+  }
+
+  private runBeforeLeaveHooks(route: IRoute): boolean {
+    const { location } = this.state;
+    if (route.leave && typeof route.leave.before === 'function') {
+      if (route.leave.before({ location }) === false) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private runAfterLeaveHooks(route: IRoute): void {
+    const { location } = this.state;
+    if (route.leave && typeof route.leave.after === 'function') {
+      route.leave.after({ location });
     }
   }
 }

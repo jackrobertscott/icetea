@@ -15,7 +15,7 @@ export interface IRoute {
   name?: string;
   exact?: boolean;
   enter?: IEvents;
-  after?: IEvents;
+  leave?: IEvents;
 }
 
 export interface IConfig {
