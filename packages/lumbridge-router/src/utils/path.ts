@@ -18,7 +18,6 @@ export const digestPath = ({
   options = {},
 }: IDigestBag): { keys: any[]; regexp: RegExp } => {
   const keys: any[] = [];
-  console.log(options);
   const regexp: RegExp = pathToRegexp(routePath, keys, options);
   return {
     keys,
@@ -38,7 +37,6 @@ export const matchPath = ({
   options = {},
 }: IMatchBag): boolean => {
   const { regexp } = digestPath({ routePath, options });
-  console.log(regexp, regexp.exec(currentPath));
   return regexp.exec(currentPath) !== null;
 };
 
