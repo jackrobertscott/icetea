@@ -1,6 +1,6 @@
 {
   "name": "lumbridge",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": false,
   "description": "Improved logic management for React apps.",
   "author": {
@@ -21,10 +21,10 @@
     "compile": "tsc"
   },
   "dependencies": {
-    "lumbridge-core": "^0.1.1",
-    "lumbridge-persistor": "^0.1.1",
-    "lumbridge-router": "^0.1.1",
-    "lumbridge-store": "^0.1.1"
+    "lumbridge-core": "^0.1.2",
+    "lumbridge-persistor": "^0.1.2",
+    "lumbridge-router": "^0.1.2",
+    "lumbridge-store": "^0.1.2"
   },
   "keywords": [
     "react",
