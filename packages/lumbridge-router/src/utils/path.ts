@@ -1,27 +1,45 @@
 import * as pathToRegexp from 'path-to-regexp';
 import { IRoute } from '../modules/Router';
 
-interface IBag {
+interface IDigestOptions {
+  sensitive?: boolean;
+  strict?: boolean;
+  end?: boolean;
+  start?: boolean;
+}
+
+interface IDigestBag {
+  routePath: string;
+  options?: IDigestOptions;
+}
+
+export const digestPath = ({
+  routePath,
+  options = {},
+}: IDigestBag): { keys: any[]; regexp: RegExp } => {
+  const keys: any[] = [];
+  console.log(options);
+  const regexp: RegExp = pathToRegexp(routePath, keys, options);
+  return {
+    keys,
+    regexp,
+  };
+};
+
+interface IMatchBag {
   currentPath: string;
   routePath: string;
-  keys?: any[];
-  options?: {
-    sensitive?: boolean;
-    strict?: boolean;
-    end?: boolean;
-    start?: boolean;
-  };
+  options?: IDigestOptions;
 }
 
 export const matchPath = ({
   currentPath,
   routePath,
-  keys = [],
   options = {},
-}: IBag): boolean => {
-  const regexp = pathToRegexp(routePath, keys, options);
-  const match = regexp.exec(currentPath);
-  return match !== null;
+}: IMatchBag): boolean => {
+  const { regexp } = digestPath({ routePath, options });
+  console.log(regexp, regexp.exec(currentPath));
+  return regexp.exec(currentPath) !== null;
 };
 
 export const compareRoutePaths = (a: IRoute, b: IRoute): number => {

@@ -13,7 +13,10 @@ export interface IRoute {
   path: string;
   component: any;
   name?: string;
+  sensitive?: boolean;
+  strict?: boolean;
   exact?: boolean;
+  start?: boolean;
   enter?: IEvents;
   leave?: IEvents;
 }
@@ -79,6 +82,12 @@ export default class Router {
         return matchPath({
           currentPath: pathname || history.location.pathname,
           routePath: `${this.base || ''}${route.path}`,
+          options: {
+            sensitive: route.sensitive || false,
+            strict: route.sensitive || false,
+            end: route.exact || false,
+            start: route.start || true,
+          },
         });
       })[0] || null
     );
