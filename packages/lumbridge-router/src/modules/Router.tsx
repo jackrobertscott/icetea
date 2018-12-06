@@ -18,14 +18,19 @@ export interface IRoute {
   leave?: IEvents;
 }
 
+export interface IRoutes {
+  [name: string]: IRoute;
+}
+
+export interface INomatch {
+  redirect: string;
+}
+
 export interface IConfig {
-  routes: {
-    [name: string]: IRoute;
-  };
+  routes: IRoutes;
+  nomatch?: INomatch;
   change?: IEvents;
-  nomatch?: {
-    redirect: string;
-  };
+  base?: string;
 }
 
 export default class Router {
@@ -33,16 +38,20 @@ export default class Router {
     return new Router(config);
   }
 
-  protected config: IConfig;
   protected routes: IRoute[];
+  protected nomatch?: INomatch;
+  protected change?: IEvents;
+  protected base?: string;
 
-  constructor(config: IConfig) {
-    expect.type('config', config, 'object');
-    expect.type('config.routes', config.routes, 'object');
-    expect.type('config.change', config.change, 'object', true);
-    expect.type('config.nomatch', config.nomatch, 'object', true);
-    this.config = { ...config };
-    this.routes = this.createRoutes();
+  constructor({ routes, change, nomatch, base }: IConfig) {
+    expect.type('config.routes', routes, 'object');
+    expect.type('config.change', change, 'object', true);
+    expect.type('config.nomatch', nomatch, 'object', true);
+    expect.type('config.base', base, 'string', true);
+    this.routes = this.createRoutes(routes);
+    this.nomatch = nomatch;
+    this.change = change;
+    this.base = base;
   }
 
   public render(): React.FunctionComponent {
@@ -50,16 +59,16 @@ export default class Router {
       <Route
         history={history}
         retrieveCurrentRoute={this.currentRoute}
-        change={this.config.change}
-        nomatch={this.config.nomatch}
+        change={this.change}
+        nomatch={this.nomatch}
       />
     );
   }
 
-  private createRoutes(): IRoute[] {
-    return Object.keys(this.config.routes)
+  private createRoutes(routes: IRoutes): IRoute[] {
+    return Object.keys(routes)
       .reduce((collection: IRoute[], name): IRoute[] => {
-        return collection.concat([{ name, ...this.config.routes[name] }]);
+        return collection.concat([{ name, ...routes[name] }]);
       }, [])
       .sort(compareRoutePaths);
   }
@@ -69,7 +78,7 @@ export default class Router {
       (this.routes as any[]).filter((route: IRoute) => {
         return matchPath({
           currentPath: pathname || history.location.pathname,
-          routePath: route.path,
+          routePath: `${this.base || ''}${route.path}`,
         });
       })[0] || null
     );
