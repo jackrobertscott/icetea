@@ -131,7 +131,7 @@ import { string, object } from 'yup';
 import apolloClient from '../client';
 
 const apolloPersistor = Persistor.create({
-  actions: {
+  methods: {
     /**
      * Wrapper around the apollo client query function.
      */
