@@ -11,7 +11,9 @@ export interface IConfig {
 
 export interface IPersistorInstanceConfig {
   name: string;
-  map?: (map: IExecute) => Instance;
+  map?: (map: IExecute) => {
+    [name: string]: any
+  };
 }
 
 export default class Persistor {
