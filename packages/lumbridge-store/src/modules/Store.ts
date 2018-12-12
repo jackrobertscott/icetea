@@ -44,21 +44,18 @@ export default class Store extends Watchable<IStoreWatcher, IStoreUpdates> {
   }
 
   public dispatch: IDispatches;
-  private config: IConfig;
   private schema: ISchema;
   private actions: IActions;
   private currentState: IState;
   private currentErrors: IErrors;
   private defaultSchema: ISchema;
 
-  constructor(config: IConfig) {
+  constructor({ schema, actions }: IConfig) {
     super();
-    expect.type('config', config, 'object');
-    expect.type('config.schema', config.schema, 'object');
-    expect.type('config.actions', config.actions, 'object', true);
-    this.config = { ...config };
-    this.schema = this.config.schema;
-    this.actions = this.config.actions || {};
+    expect.type('config.schema', schema, 'object');
+    expect.type('config.actions', actions, 'object', true);
+    this.schema = schema;
+    this.actions = actions || {};
     this.currentState = {};
     this.currentErrors = {};
     this.dispatch = this.createDispatches();

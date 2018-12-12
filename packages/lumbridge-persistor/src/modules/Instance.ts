@@ -38,20 +38,17 @@ export default class Instance extends Watchable<
     return new Instance(config);
   }
 
-  private config: IConfig;
   private mapped?: IExecute;
   private method: IMethod;
   private cache: any;
   private payloadLast: any;
 
-  constructor(config: IConfig) {
+  constructor({ mapped, method }: IConfig) {
     super();
-    expect.type('config', config, 'object');
-    expect.type('config.mapped', config.mapped, 'function');
-    expect.type('config.method', config.method, 'object');
-    this.config = { ...config };
-    this.mapped = this.config.mapped;
-    this.method = this.config.method;
+    expect.type('config.mapped', mapped, 'function');
+    expect.type('config.method', method, 'object');
+    this.mapped = mapped;
+    this.method = method;
   }
 
   public watch(watcher: IInstanceWatcher): () => void {

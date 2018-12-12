@@ -1,8 +1,6 @@
 import { expect, Watchable } from 'lumbridge-core';
 import Instance, { IInstanceWatcher, IInstanceUpdates } from './Instance';
 
-export interface IConfig {}
-
 export interface IScopeInstance {
   unwatch: () => void;
   instance: Instance;
@@ -13,18 +11,14 @@ export default class Scope extends Watchable<
   IInstanceWatcher,
   IInstanceUpdates
 > {
-  public static create(config: IConfig): Scope {
-    return new Scope(config);
+  public static create(): Scope {
+    return new Scope();
   }
 
-  private config: IConfig;
   private items: IScopeInstance[];
-  private cache: any;
 
-  constructor(config: IConfig) {
+  constructor() {
     super();
-    expect.type('config', config, 'object');
-    this.config = { ...config };
     this.items = [];
   }
 

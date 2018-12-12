@@ -11,8 +11,10 @@ export interface IConfig {
 
 export interface IPersistorInstanceConfig {
   name: string;
-  map?: (map: IExecute) => {
-    [name: string]: any
+  map?: (
+    map: IExecute
+  ) => {
+    [name: string]: any;
   };
 }
 
@@ -21,14 +23,11 @@ export default class Persistor {
     return new Persistor(config);
   }
 
-  private config: IConfig;
   private methods: IMethods;
 
-  constructor(config: IConfig) {
-    expect.type('config', config, 'object');
-    expect.type('config.methods', config.methods, 'object');
-    this.config = { ...config };
-    this.methods = this.config.methods;
+  constructor({ methods }: IConfig) {
+    expect.type('config.methods', methods, 'object');
+    this.methods = methods;
   }
 
   public instance(config: IPersistorInstanceConfig) {
