@@ -19,7 +19,7 @@ export interface IConfig {
 }
 
 export interface IInstanceWatcher {
-  data?: (data: object) => void;
+  data?: (data: { [name: string]: any }) => void;
   catch?: (error: Error) => void;
   status?: (status: IStatus) => void;
 }
