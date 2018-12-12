@@ -11,7 +11,7 @@ export interface IStatus {
   loading: boolean;
 }
 
-export type IExecute = (...args: any[]) => object;
+export type IExecute = (...args: any[]) => { [name: string]: any };
 
 export interface IConfig {
   mapped?: IExecute;
