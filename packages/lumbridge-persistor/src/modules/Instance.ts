@@ -18,12 +18,8 @@ export interface IConfig {
   method: IMethod;
 }
 
-export interface IResponse {
-  [name: string]: any;
-}
-
 export interface IInstanceWatcher {
-  data?: (data: IResponse) => void;
+  data?: (data: any) => void;
   catch?: (error: Error) => void;
   status?: (status: IStatus) => void;
 }
