@@ -27,16 +27,20 @@ export default class Watchable<W extends IWatcher, U extends IUpdates> {
   }
 
   protected batch(updates: U): void {
-    this.watchers.forEach((watcher: W) => {
-      this.isolation(watcher, updates);
+    this.watchers.forEach((watcher: W, id: number) => {
+      this.isolation(id, watcher, updates);
     });
   }
 
-  protected isolation(watcher: W, updates: U): void {
+  protected isolation(id: number, watcher: W, updates: U): void {
     Object.keys(watcher).forEach(key => {
       const run: any = watcher[key];
       const value: any = updates[key];
-      if (typeof run === 'function' && value !== undefined) {
+      if (
+        this.watchers.has(id) &&
+        typeof run === 'function' &&
+        value !== undefined
+      ) {
         run(typeof value === 'object' ? { ...value } : value);
       }
     });

@@ -57,7 +57,7 @@ export default class Instance extends Watchable<
     expect.type('watcher.status', watcher.status, 'function', true);
     const unwatch = super.watch(watcher);
     if (this.cache) {
-      this.isolation(watcher, { data: this.cache });
+      this.batch({ data: this.cache });
     }
     return unwatch;
   }
