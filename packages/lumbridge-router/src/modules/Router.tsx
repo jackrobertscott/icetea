@@ -5,8 +5,8 @@ import history, { ILocation } from '../utils/history';
 import Route from './Route';
 
 export interface IEvents {
-  before: (options: { location: ILocation }) => boolean | void;
-  after: (options: { location: ILocation }) => void;
+  before?: (options: { location: ILocation }) => boolean | void;
+  after?: (options: { location: ILocation }) => void;
 }
 
 export interface IRoute {
