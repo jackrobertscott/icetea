@@ -40,7 +40,6 @@ export default class Instance extends Watchable<
 
   private mapped?: IExecute;
   private method: IMethod;
-  private cache: any;
   private payloadLast: any;
 
   constructor({ mapped, method }: IConfig) {
@@ -56,13 +55,10 @@ export default class Instance extends Watchable<
     expect.type('watcher.catch', watcher.catch, 'function', true);
     expect.type('watcher.status', watcher.status, 'function', true);
     const unwatch = super.watch(watcher);
-    if (this.cache) {
-      this.batch({ data: this.cache });
-    }
     return unwatch;
   }
 
-  public refresh() {
+  public redo() {
     this.execute(this.payloadLast);
   }
 
@@ -83,7 +79,6 @@ export default class Instance extends Watchable<
     }
     response
       .then(data => {
-        this.cache = data;
         this.batch({
           data,
           status: { loading: false },
