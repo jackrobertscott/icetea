@@ -4,7 +4,7 @@ export interface IMethod {
   payload: {
     [prop: string]: any;
   };
-  handler: (...args: any[]) => Promise<any>;
+  handler: (...args: any[]) => Promise<any> | any;
 }
 
 export interface IStatus {
@@ -63,7 +63,7 @@ export default class Instance extends Watchable<
   }
 
   public execute(payload: any = {}): void {
-    const map = this.mapped ? this.mapped(payload) : { ...payload };
+    const map = this.mapped ? this.mapped({ ...payload }) : { ...payload };
     const issue = this.generateErrors(map);
     if (issue) {
       this.batch({ catch: issue });
@@ -71,25 +71,19 @@ export default class Instance extends Watchable<
     }
     this.payloadLast = payload;
     this.batch({ status: { loading: true } });
-    const response = this.method.handler(map);
-    if (!(response instanceof Promise)) {
-      throw new Error(
-        `Expected "method.handler" to return a Promise but got "${typeof response}".`
-      );
+    const status = { loading: false };
+    try {
+      const response = this.method.handler(map);
+      if (response instanceof Promise) {
+        response
+          .then(data => this.batch({ data, status }))
+          .catch(error => this.batch({ catch: error, status }));
+      } else {
+        this.batch({ data: response, status });
+      }
+    } catch (error) {
+      this.batch({ catch: error, status });
     }
-    response
-      .then(data => {
-        this.batch({
-          data,
-          status: { loading: false },
-        });
-      })
-      .catch(error => {
-        this.batch({
-          catch: error,
-          status: { loading: false },
-        });
-      });
   }
 
   private generateErrors(payload: any = {}): Error | null {
