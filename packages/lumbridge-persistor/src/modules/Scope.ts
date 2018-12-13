@@ -48,6 +48,6 @@ export default class Scope extends Watchable<
   private dependencies() {
     this.items
       .filter(({ depends }) => depends)
-      .forEach(({ instance }) => instance.refresh());
+      .forEach(({ instance }) => instance.redo());
   }
 }
