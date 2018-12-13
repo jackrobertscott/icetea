@@ -54,12 +54,11 @@ export default class Instance extends Watchable<
     expect.type('watcher.data', watcher.data, 'function', true);
     expect.type('watcher.catch', watcher.catch, 'function', true);
     expect.type('watcher.status', watcher.status, 'function', true);
-    const unwatch = super.watch(watcher);
-    return unwatch;
+    return super.watch(watcher);
   }
 
   public redo() {
-    this.execute(this.payloadLast);
+    this.execute({ ...(this.payloadLast || {}) });
   }
 
   public execute(payload: any = {}): void {

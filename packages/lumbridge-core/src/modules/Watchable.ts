@@ -41,7 +41,7 @@ export default class Watchable<W extends IWatcher, U extends IUpdates> {
         typeof run === 'function' &&
         value !== undefined
       ) {
-        run(typeof value === 'object' ? { ...value } : value);
+        run(value);
       }
     });
   }
