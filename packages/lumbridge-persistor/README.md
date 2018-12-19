@@ -32,80 +32,54 @@ const persistor = Persistor.create({
 
 ### Config
 
+#### `Persistor.create()`
+
 Each persistor is configured with a `config` object:
 
 ```js
-const config = {
+interface IPersistorConfig {
+  // todo...
+}
+
+const config: IPersistorConfig = {
   // options...
 };
 
 const persistor = Persistor.create(config);
 ```
 
-This config object will contain all the information required by the persistor.
-
-#### `config.methods`
-
-- Type: `object`
-- Required: `true`
-
-A set of methods which provide an common interface for interacting with a data source.
-
-```js
-const serverPersistor = Persistor.create({
-  methods: {
-    // code...
-  },
-});
-```
-
 Example:
 
 ```js
-const serverPersistor = Persistor.create({
-  methods: {
-    query: {
-      payload: {
-        query: string().required(),
-        variables: object(),
-      },
-      handler: ({ query, variables }) => {
-        return graphQLClient.query({ query, variables })
-          .then(({ data }) => data);
-      },
+const serverPersistor = Persistor.create()
+  .action({
+    name: 'query',
+    handler: ({ query, variables }) => {
+      return apollo.query({ query, variables })
+        .then(({ data }) => data);
     },
-    mutate: {
-      payload: {
-        mutate: string().required(),
-        variables: object(),
-      },
-      handler: ({ mutate, variables }) => {
-        return graphQLClient.mutate({ mutation: mutate, variables })
-          .then(({ data }) => data);
-      },
+  })
+  .action({
+    name: 'mutate',
+    handler: ({ query, variables }) => {
+      return apollo.mutate({ mutation: query, variables })
+        .then(({ data }) => data);
     },
-  },
-});
+  });
 ```
-
-Properties:
-
-- `methods[methodName].payload` [object]: a set of validations used to check that the payload is the correct shape and type.
-- `methods[methodName].handler` [func]: a function which collects and returns data in a `Promise`.
 
 **Note:** make sure your `handler` function returns a promise (e.g. `new Promise((resolve, reject) => resolve(data))`) or it will not work.
 
-#### `persistor.instance`
-
-- Type: `func`
-- Returns: `persistorInstance`
+#### `persistor.instance()`
 
 Create a persistor method with more specific properties to the method being called.
 
 ```js
-const serverPersistor = Persistor.create(config);
+interface IInstanceConfig {
+  // todo...
+}
 
-const meQueryInstance = serverPersistor.instance({
+const instanceConfig: IInstanceConfig = {
   name: 'query',
   map: ({ ...args }) => ({
     ...args,
@@ -115,18 +89,12 @@ const meQueryInstance = serverPersistor.instance({
       }
     `,
   })
-});
+}
+
+const meQueryInstance = serverPersistor.instance(instanceConfig);
 ```
 
-Properties:
-
-- `name` [string]: the key which corresponding to the persistor method.
-- `map` [func]: the callback provided is used to map the variables passed to the `meQueryInstance.execute` function to the handler payload.
-
-#### `persistorInstance.execute`
-
-- Type: `func`
-- Returns: `void`
+#### `persistorInstance.execute()`
 
 Execute the persistor method with parameters (which you specify).
 
@@ -136,18 +104,25 @@ meQueryInstance.execute({
 });
 ```
 
-Properties:
-
-- `[payloadProperty]` [any]: a set of payload properties which are validated and then provided to the corresponding persistor method.
-
 **Note:** by seperating the functionality of *executing* an method and *receiving* that method's data, it enables you to more efficiently re-query the data without the code overhead. A good example would be when you wish to load a list of items that will change based upon a search filter. The list can be requeried easily while you only have to handle how that data is handled only once.
 
-#### `persistorInstance.watch`
-
-- Type: `func`
-- Returns: `unwatch`
+#### `persistorInstance.watch()`
 
 Listen to any updates in the persistor as the persistor instance executes.
+
+```js
+interface IWatchEvents {
+  // todo...
+}
+
+const events: IWatchEvents = {
+  // options...
+};
+
+const unwatch = persistorInstance.watch(events);
+```
+
+Example:
 
 ```js
 const unwatchData = meQueryInstance.watch({
@@ -165,12 +140,6 @@ const componentWillUnmount = () => {
 };
 ```
 
-Properties:
-
-- `done` [func]: this function is called whenever the instance resolves with data.
-- `catch` [func]: this function is called whenever there is an error in the persistor.
-- `status` [func]: this function is called when there is an update in the state of the instance.
-
 **Note:** when you start watching a persistor method, don't forget to call the `unwatch` function when the component unmounts and you stop listening for changes (see above code). If you don't unwatch, then you might cause a memory leak.
 
 ### Scopes
@@ -186,51 +155,56 @@ For those use cases, we created the `Scope` data structure.
 ```js
 import { Scope } from 'lumbridge-persistor';
 
-const scope = Scope.create({});
+interface IScopeConfig {
+  // todo...
+}
+
+const config = {
+  // code...
+};
+
+const scope = Scope.create(config);
 ```
 
 Scopes are used to add extra functionality to persistors so that they can listen and react to changes in each other.
 
-#### `scope.absorb`
-
-- Type: `func`
-- Returns: `void`
+#### `scope.absorb()`
 
 This will connect a persistor method to the scope. Connecting a persistor method will enable the scope to listen to the changes in all the connected methods.
 
 ```js
-const persistor = Persistor.create({});
+const persistor = Persistor.create({/* code... */});
 const persistorFirstInstance = persistor.instance({ name: 'exampleQuery' });
 const persistorSecondInstance = persistor.instance({ name: 'otherQuery' });
 
-const scope = Scope.create({});
+const scope = Scope.create({/* code... */});
 scope.absorb(persistorFirstInstance);
 scope.absorb(persistorSecondInstance, true);
 ```
 
-Parameters:
-
-- `arguments[0]` [persistorInstance]: the persistor method to add to the scope.
-- `arguments[1]` [boolean]: if this is `true` then the method will re-run the last execution after *any* of the other connected methods run successfully.
-
-#### `scope.watch`
-
-- Type: `func`
-- Returns: `unwatch`
+#### `scope.watch()`
 
 This will combine and watch all of the persistor methods. This can be useful when you want to listen to any errors which occur in your methods and respond to them all in the same way (such as by creating a toast message).
+
+```js
+interface IWatchEvents {
+  // todo...
+}
+
+const events: IWatchEvents = {
+  // options...
+};
+
+const unwatch = scope.watch(events);
+```
+
+Example:
 
 ```js
 const unwatch = scope.watch({
   catch: error => console.warn(error),
 });
 ```
-
-Properties:
-
-- `done` [func]: this function is called whenever the instance resolves with data.
-- `catch` [func]: this function is called whenever there is an error in the persistor.
-- `status` [func]: this function is called when there is an update in the state of the instance.
 
 **Note:** when you start watching a scope, don't forget to call the `unwatch` function when you don't need it any more. If you don't unwatch, then you might cause a memory leak.
 

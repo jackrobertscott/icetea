@@ -57,38 +57,37 @@ Example:
 import { Router } from 'lumbridge';
 import { HomePage, LoginPage, SignUpPage } from '../components/pages';
 
-const authRouter = Router.create({
-  routes: {
-    home: {
-      path: '/',
-      exact: true,
-      component: HomePage,
+export const authRouter = Router.create({
+    enter: {
+      before: () => authState.state.isLoggedIn,
+    }
+  })
+  .route({
+    name: 'home',
+    path: '/',
+    exact: true,
+    component: HomePage,
+  })
+  .route({
+    name: 'login',
+    path: '/login',
+    component: LoginForm,
+    enter: {
+      before: () => userIsNotLoggedIn(),
     },
-    login: {
-      path: '/login',
-      component: LoginForm,
-      enter: {
-        before: () => userIsNotLoggedIn(),
-      },
-      leave: {
-        before: () => saveDataBeforeLeaving(),
-      },
+    leave: {
+      before: () => saveDataBeforeLeaving(),
     },
-    signUp: {
-      path: '/sign-up',
-      component: SignUpPage,
-      alias: ['hello', 'yellow'],
-      enter: {
-        before: () => userIsNotLoggedIn(),
-      },
+  })
+  .route({
+    name: 'signUp',
+    path: '/sign-up',
+    component: SignUpPage,
+    alias: ['hello', 'yellow'],
+    enter: {
+      before: () => userIsNotLoggedIn(),
     },
-  },
-  change: {
-    after: ({ match: { path } }) => {
-      recordRouteForAnalytics(path);
-    },
-  },
-});
+  });
 ```
 
 Usage:
@@ -127,39 +126,23 @@ Example:
 
 ```js
 import { Persistor } from 'lumbridge';
-import { string, object } from 'yup';
-import apolloClient from '../client';
+import apollo from '../client';
 
-const apolloPersistor = Persistor.create({
-  methods: {
-    /**
-     * Wrapper around the apollo client query function.
-     */
-    query: {
-      payload: {
-        query: string().required(),
-        variables: object(),
-      },
-      handler: ({ query, variables }) => {
-        return apolloClient.query({ query, variables })
-          .then(({ data }) => data);
-      },
+const apolloPersistor = Persistor.create()
+  .action({
+    name: 'query',
+    handler: ({ query, variables }) => {
+      return apollo.query({ query, variables })
+        .then(({ data }) => data);
     },
-    /**
-     * Wrapper around the apollo client mutate function.
-     */
-    mutate: {
-      payload: {
-        query: string().required(),
-        variables: object(),
-      },
-      handler: ({ query, variables }) => {
-        return apolloClient.mutate({ mutation: query, variables })
-          .then(({ data }) => data);
-      },
+  })
+  .action({
+    name: 'mutate',
+    handler: ({ query, variables }) => {
+      return apollo.mutate({ mutation: query, variables })
+        .then(({ data }) => data);
     },
-  },
-});
+  });
 ```
 
 Usage:
@@ -170,18 +153,17 @@ import { apolloPersistor } from '../persistors/apolloPersistor';
 
 /**
  * Create an instance from the persistor, this will contain the common
- * request information (such as a GraphQL query).
+ * request information - such as a graphQL query.
  */
-const meQueryInstance = apolloPersistor.instance({
-  name: 'query',
-  map: ({ ...args }) => ({
-    ...args,
+export const meQueryInstance = apolloPersistor.instance({
+  action: 'query',
+  common: () => ({
     query: `
       query($id: String) {
         me(id: $id) { name }
       }
     `,
-  })
+  }),
 });
 
 /**
@@ -246,7 +228,7 @@ Example:
 
 ```js
 import { Store } from 'lumbridge';
-import { string, boolean, object } from 'yup';
+import * as Yup from 'yup';
 
 const authStore = Store.create({
   schema: {
@@ -255,28 +237,28 @@ const authStore = Store.create({
     },
     userId: {
       state: null,
-      validate: string(),
+      validate: Yup.string(),
     },
     loggedIn: {
       state: false,
-      validate: boolean().required(),
+      validate: Yup.boolean().required(),
     },
     big: {
       state: null,
-      validate: object({
-        one: string().required(),
-        two: string().required(),
+      validate: Yup.object({
+        one: Yup.string().required(),
+        two: Yup.string().required(),
       }),
     },
-  },
-  actions: {
-    loginUser: ({ token, userId }) => ({
+  })
+  .action({
+    name: 'login',
+    execute: ({ token, userId }) => ({
       token,
       userId,
       loggedIn: Boolean(token && userId),
     }),
-  },
-});
+  });
 ```
 
 Usage:
@@ -300,18 +282,16 @@ You can also use stores with routes:
 import { Router } from 'lumbridge';
 import { authStore } from '../stores/authStore';
 
-const authRouter = Router.create({
-  routes: {
-    home: {
-      path: '/',
-      exact: true,
-      component: HomePage,
-      enter: {
-        before: () => authStore.state.loggedIn,
-      },
+const authRouter = Router.create()
+  .route({
+    name: 'home',
+    path: '/',
+    exact: true,
+    component: HomePage,
+    enter: {
+      before: () => authStore.state.loggedIn,
     },
-  },
-});
+  });
 ```
 
 You can also handle forms with stores:
