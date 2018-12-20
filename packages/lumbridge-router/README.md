@@ -30,12 +30,18 @@ const router = Router.create({
 
 ## API
 
-### Config
+### Router
 
-Each router is configured with a `config` object:
+#### `Router.create()`
+
+Each router is configured with a `config` object.
 
 ```js
-const config = {
+interface IRouterConfig {
+  // todo...
+}
+
+const config: IRouterConfig = {
   // options...
 };
 
@@ -43,21 +49,6 @@ const router = Router.create(config);
 ```
 
 This config object will contain all the information required by the router.
-
-#### `config.routes`
-
-- Type: `object`
-- Required: `true`
-
-A collection of routes which may be rendered by the router relative to the app's url.
-
-```js
-const router = Router.create({
-  routes: {
-    // routes...
-  },
-});
-```
 
 Example:
 

@@ -30,11 +30,11 @@ const persistor = Persistor.create({
 
 ## API
 
-### Config
+### Persistor
 
 #### `Persistor.create()`
 
-Each persistor is configured with a `config` object:
+Each persistor is configured with a `config` object.
 
 ```js
 interface IPersistorConfig {
@@ -48,10 +48,30 @@ const config: IPersistorConfig = {
 const persistor = Persistor.create(config);
 ```
 
-Example:
+#### `persistor.action()`
+
+Make a new persistor which includes this action.
 
 ```js
-const serverPersistor = Persistor.create()
+interface IAction {
+  // todo...
+}
+
+const queryAction: IAction = {
+  name: 'query',
+  handler: ({ query, variables }) => {
+    return apollo.query({ query, variables })
+      .then(({ data }) => data);
+  },
+};
+
+const updatedServerPersistor = serverPersistor.action(queryAction);
+```
+
+Persistors are immutable which helps us reduce errors and promotes good code. As such, you can chain your actions and export them from a file.
+
+```js
+export default Persistor.create()
   .action({
     name: 'query',
     handler: ({ query, variables }) => {
@@ -68,7 +88,7 @@ const serverPersistor = Persistor.create()
   });
 ```
 
-**Note:** make sure your `handler` function returns a promise (e.g. `new Promise((resolve, reject) => resolve(data))`) or it will not work.
+**Note:** your `handler` function may return a normal value or a promise e.g. `new Promise((resolve, reject) => resolve(data))`.
 
 #### `persistor.instance()`
 
@@ -89,12 +109,14 @@ const instanceConfig: IInstanceConfig = {
       }
     `,
   })
-}
+};
 
 const meQueryInstance = serverPersistor.instance(instanceConfig);
 ```
 
-#### `persistorInstance.execute()`
+### Instance
+
+#### `instance.execute()`
 
 Execute the persistor method with parameters (which you specify).
 
@@ -106,7 +128,7 @@ meQueryInstance.execute({
 
 **Note:** by seperating the functionality of *executing* an method and *receiving* that method's data, it enables you to more efficiently re-query the data without the code overhead. A good example would be when you wish to load a list of items that will change based upon a search filter. The list can be requeried easily while you only have to handle how that data is handled only once.
 
-#### `persistorInstance.watch()`
+#### `instance.watch()`
 
 Listen to any updates in the persistor as the persistor instance executes.
 
@@ -119,7 +141,7 @@ const events: IWatchEvents = {
   // options...
 };
 
-const unwatch = persistorInstance.watch(events);
+const unwatch = exampleInstance.watch(events);
 ```
 
 Example:
@@ -159,7 +181,7 @@ interface IScopeConfig {
   // todo...
 }
 
-const config = {
+const config: IScopeConfig = {
   // code...
 };
 

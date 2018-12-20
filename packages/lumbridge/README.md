@@ -250,13 +250,15 @@ const authStore = Store.create({
         two: Yup.string().required(),
       }),
     },
+    count: {
+      state: 0,
+      validate: Yup.number().required(),
+    },
   })
   .action({
-    name: 'login',
-    execute: ({ token, userId }) => ({
-      token,
-      userId,
-      loggedIn: Boolean(token && userId),
+    name: 'increment',
+    execute: ({ state, data }) => ({
+      count: state.count += data,
     }),
   });
 ```
@@ -269,8 +271,8 @@ import { authStore } from '../stores/authStore';
 
 const HeaderBar = () => (
   <Menu>
-    <Item onClick={() => authStore.reset()}>
-      Logout
+    <Item onClick={() => authStore.dispatch.increment(1)}>
+      Count
     </Item>
   </Menu>
 );

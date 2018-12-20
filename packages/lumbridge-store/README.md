@@ -30,55 +30,44 @@ const store = Store.create({
 
 ## API
 
-### Config
+### Store
 
-Each store is configured with a `config` object:
+#### `Store.create()`
+
+Each store is configured with a `config` object.
 
 ```js
-const config = {
+interface IStoreConfig {
+  // todo...
+}
+
+const config: IStoreConfig = {
   // options...
 };
 
 const store = Store.create(config);
 ```
 
-This config object will contain all the information required by the store.
-
-#### `config.schema`
-
-- Type: `object`
-- Required: `true`
-
-Describes the shape of the state object and can optionally set validations on that shape.
-
-```js
-const store = Store.create({
-  schema: {
-    // properties...
-  },
-});
-```
-
 Example:
 
 ```js
-import { string, boolean, object } from 'yup';
+import * as Yup from 'yup';
 
 const store = Store.create({
   schema: {
     userId: {
       state: null,
-      validate: string(),
+      validate: Yup.string(),
     },
     loggedIn: {
       state: false,
-      validate: boolean().required(),
+      validate: Yup.boolean().required(),
     },
     deepExample: {
       state: null,
-      validate: object({
-        one: string(),
-        two: string().required(),
+      validate: Yup.object({
+        one: Yup.string(),
+        two: Yup.string().required(),
       }),
     },
   },
@@ -87,27 +76,13 @@ const store = Store.create({
 
 **Note:** the above example uses the validation library [Yup](https://www.npmjs.com/package/yup) to make thinds easier but you can use any validation function.
 
-Properties:
+#### `store.action()`
 
-- `schema[propName].state` [any]: the default value of this property.
-- `schema[propName].validate` [func]: a function which is passed the value to check and should return `true` if it is valid.
-
-#### `config.actions`
-
-- Type: `object`
-- Required: `false`
-
-The actions object is used for more complex state manipulation functions. However, you do not need to use this in order to use the store.
+Actions are used for more complex state manipulation functions. However, you do not need to use this in order to use the store.
 
 ```js
-const store = Store.create({
-  schema: {
-    // properties...
-  },
-  actions: {
-    // actions...
-  },
-});
+const store = Store.create({ schema })
+  .action();
 ```
 
 Example:
