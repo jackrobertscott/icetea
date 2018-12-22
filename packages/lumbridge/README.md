@@ -93,7 +93,7 @@ export const authRouter = Router.create({
 Usage:
 
 ```js
-import { Link } from 'lumbridge';
+import { Router } from 'lumbridge';
 import authRouter from '../routers/authRouter';
 
 const DashboardRoutes = authRouter.compile();
@@ -101,9 +101,9 @@ const DashboardRoutes = authRouter.compile();
 const App = () => (
   <Dashboard>
     <Menu>
-      <Link to="/">Home</Link>
-      <Link to="/faq">FAQ</Link>
-      <Link to="/about">About</Link>
+      <Router.Link to="/" contents="Home" />
+      <Router.Link to="/faq" contents="FAQ" />
+      <Router.Link to="/about" contents="About" />
     </Menu>
     <DashboardRoutes />
   </Dashboard>
@@ -182,7 +182,7 @@ const MyProfile = ({ id }) => {
    */
   useEffect(() => {
     const unwatch = meQueryInstance.watch({
-      done: data => setData(data),
+      data: data => setData(data),
       catch: error => setError(error),
       status: loading => setLoading(loading),
     });
@@ -230,31 +230,32 @@ Example:
 import { Store } from 'lumbridge';
 import * as Yup from 'yup';
 
-const authStore = Store.create({
-  schema: {
-    token: {
-      state: null,
-    },
-    userId: {
-      state: null,
-      validate: Yup.string(),
-    },
-    loggedIn: {
-      state: false,
-      validate: Yup.boolean().required(),
-    },
-    big: {
-      state: null,
-      validate: Yup.object({
-        one: Yup.string().required(),
-        two: Yup.string().required(),
-      }),
-    },
-    count: {
-      state: 0,
-      validate: Yup.number().required(),
-    },
-  })
+const schema = {
+  token: {
+    state: null,
+  },
+  userId: {
+    state: null,
+    validate: Yup.string(),
+  },
+  loggedIn: {
+    state: false,
+    validate: Yup.boolean().required(),
+  },
+  big: {
+    state: null,
+    validate: Yup.object({
+      one: Yup.string().required(),
+      two: Yup.string().required(),
+    }),
+  },
+  count: {
+    state: 0,
+    validate: Yup.number().required(),
+  },
+};
+
+const authStore = Store.create({ schema })
   .action({
     name: 'increment',
     execute: ({ state, data }) => ({

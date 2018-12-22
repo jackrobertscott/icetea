@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Link } from 'lumbridge-router';
+import { Router } from 'lumbridge-router';
 import Main from './layouts/Main';
 import mainRouter from './routes/mainRouter';
 import authStore from './stores/authStore';
@@ -31,15 +31,15 @@ export default class App extends Component {
       <Main>
         <div>User id: {this.state.userId}</div>
         <nav>
-          <Link to="/" style={{ marginRight: '10px' }}>
+          <Router.Link to="/" style={{ marginRight: '10px' }}>
             Home
-          </Link>
-          <Link to="/about" style={{ marginRight: '10px' }}>
+          </Router.Link>
+          <Router.Link to="/about" style={{ marginRight: '10px' }}>
             About
-          </Link>
-          <Link to="/faq" style={{ marginRight: '10px' }}>
+          </Router.Link>
+          <Router.Link to="/faq" style={{ marginRight: '10px' }}>
             Faq
-          </Link>
+          </Router.Link>
         </nav>
         <hr />
         <Routes />

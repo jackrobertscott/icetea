@@ -3,6 +3,7 @@ import { expect } from 'lumbridge-core';
 import { matchPath, compareRoutePaths } from '../utils/path';
 import history, { ILocation } from '../utils/history';
 import Route from './Route';
+import { Link } from '..';
 
 export interface IEvents {
   before?: (options: { location: ILocation }) => boolean | void;
@@ -37,6 +38,7 @@ export interface IConfig {
 }
 
 export default class Router {
+  public static Link = Link;
   public static create(config: IConfig): Router {
     return new Router(config);
   }

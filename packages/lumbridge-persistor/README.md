@@ -32,7 +32,7 @@ const persistor = Persistor.create({
 
 ### Persistor
 
-#### `Persistor.create()`
+#### `const persistor = Persistor.create()`
 
 Each persistor is configured with a `config` object.
 
@@ -68,7 +68,7 @@ const queryAction: IAction = {
 const updatedServerPersistor = serverPersistor.action(queryAction);
 ```
 
-Persistors are immutable which helps us reduce errors and promotes good code. As such, you can chain your actions and export them from a file.
+Chain multiple persistor actions.
 
 ```js
 export default Persistor.create()
@@ -90,7 +90,7 @@ export default Persistor.create()
 
 **Note:** your `handler` function may return a normal value or a promise e.g. `new Promise((resolve, reject) => resolve(data))`.
 
-#### `persistor.instance()`
+#### `const instance = persistor.instance()`
 
 Create a persistor method with more specific properties to the method being called.
 
@@ -138,28 +138,32 @@ interface IWatchEvents {
 }
 
 const events: IWatchEvents = {
-  // options...
+  data: data => setData(data),
+  catch: error => setError(error),
+  status: ({ loading }) => setLoading(loading),
 };
 
 const unwatch = exampleInstance.watch(events);
 ```
 
-Example:
+Here is an example with a React hook.
 
 ```js
-const unwatchData = meQueryInstance.watch({
-  done: data => setData(data),
-  status: ({ loading }) => setLoading(loading),
-});
-
-const unwatchErrors = meQueryInstance.watch({
-  catch: error => setError(error),
-});
-
-const componentWillUnmount = () => {
-  unwatchData();
-  unwatchErrors();
-};
+export function LoadUserData() {
+  const [me, setMe] = useState(null);
+  useEffect(() => {
+    const unwatch = meQueryInstance.watch({
+      data: data => setMe(data || null);
+    });
+    return () => unwatch();
+  }, []);
+  if (!me) {
+    return <div>Loading...</div>;
+  }
+  return (
+    <div>{me.name}</div>
+  );
+}
 ```
 
 **Note:** when you start watching a persistor method, don't forget to call the `unwatch` function when the component unmounts and you stop listening for changes (see above code). If you don't unwatch, then you might cause a memory leak.
@@ -214,18 +218,10 @@ interface IWatchEvents {
 }
 
 const events: IWatchEvents = {
-  // options...
+  catch: error => console.warn(error),
 };
 
 const unwatch = scope.watch(events);
-```
-
-Example:
-
-```js
-const unwatch = scope.watch({
-  catch: error => console.warn(error),
-});
 ```
 
 **Note:** when you start watching a scope, don't forget to call the `unwatch` function when you don't need it any more. If you don't unwatch, then you might cause a memory leak.
