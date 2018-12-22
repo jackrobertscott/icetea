@@ -83,7 +83,6 @@ export const authRouter = Router.create({
     name: 'signUp',
     path: '/sign-up',
     component: SignUpPage,
-    alias: ['hello', 'yellow'],
     enter: {
       before: () => userIsNotLoggedIn(),
     },
@@ -310,7 +309,6 @@ import FieldError from '../components/FieldError';
 const LoginFormHooks = ({ onSubmit }) => {
   const [errors, setErrors] = useState({});
   const [state, setState] = useState({});
-  
   useEffect(() => {
     const unwatch = authStore.watch({
       state: state => setState(state),
@@ -318,7 +316,6 @@ const LoginFormHooks = ({ onSubmit }) => {
     });
     return () => unwatch();
   }, []); // fire only on mount and unmount (empty array)
-
   return (
     <form onSubmit={onSubmit}>
       <div>

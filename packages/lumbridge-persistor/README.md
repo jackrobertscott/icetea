@@ -65,7 +65,7 @@ const queryAction: IAction = {
   },
 };
 
-const updatedServerPersistor = serverPersistor.action(queryAction);
+serverPersistor.action(queryAction);
 ```
 
 Chain multiple persistor actions.
