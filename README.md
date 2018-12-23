@@ -28,10 +28,6 @@ Import into a your app:
 
 ```js
 import { Store, Persistor, Router } from 'lumbridge';
-
-const authStore = Store.create({
-  // code...
-});
 ```
 
 **Note:** lumbridge components require *no additional setup* to start using in an existing React app.

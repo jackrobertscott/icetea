@@ -22,10 +22,87 @@ Then import the helper classes where needed.
 
 ```js
 import { Persistor } from 'lumbridge-persistor';
+```
 
-const persistor = Persistor.create({
-  // code...
+**Note:** the `lumbridge` parent package contains [`lumbridge-router`, `lumbridge-store`, `lumbridge-persistor`].
+
+## Usage
+
+Configure a persistor by creating a interface with a data source.
+
+```js
+import { Persistor } from 'lumbridge';
+import apollo from '../client';
+
+const apolloPersistor = Persistor.create()
+  .action({
+    name: 'query',
+    handler: ({ query, variables }) => {
+      return apollo.query({ query, variables })
+        .then(({ data }) => data);
+    },
+  })
+  .action({
+    name: 'mutate',
+    handler: ({ query, variables }) => {
+      return apollo.mutate({ mutation: query, variables })
+        .then(({ data }) => data);
+    },
+  });
+```
+
+Create instances which will preserve and listen to data from the data source.
+
+```jsx
+import React from 'react';
+import { apolloPersistor } from '../persistors/apolloPersistor';
+
+export const meQueryInstance = apolloPersistor.instance({
+  action: 'query',
+  common: () => ({
+    query: `
+      query($id: String) {
+        me(id: $id) { name }
+      }
+    `,
+  }),
 });
+
+const MyProfile = ({ id }) => {
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState(null);
+  /**
+   * By passing everything in via an object, you get the following benefits:
+   * 1. Unsubscribe from all functions on unwatch (avoid memory leaks)
+   * 2. Get to pick and choose which functions to use where.
+   * 3. Only fire run on mounting and unmounting of component.
+   */
+  useEffect(() => {
+    const unwatch = meQueryInstance.watch({
+      data: data => setData(data),
+      catch: error => setError(error),
+      status: loading => setLoading(loading),
+    });
+    return () => unwatch();
+  }, []);
+  /**
+   * Executions are seperated from results so that it's
+   * easy to refresh without extra code.
+   */
+  useEffect(() => {
+    meQueryInstance.execute({
+      variables: { id },
+    });
+  }, [id]);
+  return (
+    <div>
+      {data.me.name}
+      {error && error.message}
+      {loading}
+    </div>
+  );
+};
 ```
 
 ## API
@@ -36,27 +113,27 @@ const persistor = Persistor.create({
 
 Each persistor is configured with a `config` object.
 
-```js
-interface IPersistorConfig {
-  // todo...
-}
-
+```ts
 const config: IPersistorConfig = {
-  // options...
+  // ...
 };
 
 const persistor = Persistor.create(config);
+```
+
+Type definitions.
+
+```ts
+interface IPersistorConfig {
+  // ...
+}
 ```
 
 #### `persistor.action()`
 
 Make a new persistor which includes this action.
 
-```js
-interface IAction {
-  // todo...
-}
-
+```ts
 const queryAction: IAction = {
   name: 'query',
   handler: ({ query, variables }) => {
@@ -66,6 +143,14 @@ const queryAction: IAction = {
 };
 
 serverPersistor.action(queryAction);
+```
+
+Type definitions.
+
+```ts
+interface IAction {
+  // ...
+}
 ```
 
 Chain multiple persistor actions.
@@ -94,11 +179,7 @@ export default Persistor.create()
 
 Create a persistor method with more specific properties to the method being called.
 
-```js
-interface IInstanceConfig {
-  // todo...
-}
-
+```ts
 const instanceConfig: IInstanceConfig = {
   name: 'query',
   map: ({ ...args }) => ({
@@ -114,11 +195,19 @@ const instanceConfig: IInstanceConfig = {
 const meQueryInstance = serverPersistor.instance(instanceConfig);
 ```
 
+Type definitions.
+
+```ts
+interface IInstanceConfig {
+  // ...
+}
+```
+
 ### Instance
 
 #### `instance.execute()`
 
-Execute the persistor method with parameters (which you specify).
+Execute the persistor method with parameters - which you specify.
 
 ```js
 meQueryInstance.execute({
@@ -132,11 +221,7 @@ meQueryInstance.execute({
 
 Listen to any updates in the persistor as the persistor instance executes.
 
-```js
-interface IWatchEvents {
-  // todo...
-}
-
+```ts
 const events: IWatchEvents = {
   data: data => setData(data),
   catch: error => setError(error),
@@ -146,9 +231,19 @@ const events: IWatchEvents = {
 const unwatch = exampleInstance.watch(events);
 ```
 
+Type definitions.
+
+```ts
+interface IWatchEvents {
+  data?: (data: any) => void;
+  catch?: (error: Error) => void;
+  status?: (status: IStatus) => void;
+}
+```
+
 Here is an example with a React hook.
 
-```js
+```jsx
 export function LoadUserData() {
   const [me, setMe] = useState(null);
   useEffect(() => {
@@ -181,15 +276,19 @@ For those use cases, we created the `Scope` data structure.
 ```js
 import { Scope } from 'lumbridge-persistor';
 
-interface IScopeConfig {
-  // todo...
-}
-
 const config: IScopeConfig = {
-  // code...
+  // ...
 };
 
 const scope = Scope.create(config);
+```
+
+Type definitions.
+
+```ts
+interface IScopeConfig {
+  // ...
+}
 ```
 
 Scopes are used to add extra functionality to persistors so that they can listen and react to changes in each other.
@@ -199,11 +298,11 @@ Scopes are used to add extra functionality to persistors so that they can listen
 This will connect a persistor method to the scope. Connecting a persistor method will enable the scope to listen to the changes in all the connected methods.
 
 ```js
-const persistor = Persistor.create({/* code... */});
+const persistor = Persistor.create();
 const persistorFirstInstance = persistor.instance({ name: 'exampleQuery' });
 const persistorSecondInstance = persistor.instance({ name: 'otherQuery' });
 
-const scope = Scope.create({/* code... */});
+const scope = Scope.create();
 scope.absorb(persistorFirstInstance);
 scope.absorb(persistorSecondInstance, true);
 ```
@@ -212,16 +311,20 @@ scope.absorb(persistorSecondInstance, true);
 
 This will combine and watch all of the persistor methods. This can be useful when you want to listen to any errors which occur in your methods and respond to them all in the same way (such as by creating a toast message).
 
-```js
-interface IWatchEvents {
-  // todo...
-}
-
+```ts
 const events: IWatchEvents = {
   catch: error => console.warn(error),
 };
 
 const unwatch = scope.watch(events);
+```
+
+Type definitions.
+
+```ts
+interface IWatchEvents {
+  // ...
+}
 ```
 
 **Note:** when you start watching a scope, don't forget to call the `unwatch` function when you don't need it any more. If you don't unwatch, then you might cause a memory leak.

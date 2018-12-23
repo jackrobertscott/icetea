@@ -1,12 +1,12 @@
 import { expect } from 'lumbridge-core';
-import Instance, { IExecute, IMethod } from './Instance';
+import Instance, { IExecute, IAction } from './Instance';
 
-export interface IMethods {
-  [name: string]: IMethod;
+export interface IActions {
+  [name: string]: IAction;
 }
 
 export interface IConfig {
-  methods: IMethods;
+  methods: IActions;
 }
 
 export interface IPersistorInstanceConfig {
@@ -23,7 +23,7 @@ export default class Persistor {
     return new Persistor(config);
   }
 
-  private methods: IMethods;
+  private methods: IActions;
 
   constructor({ methods }: IConfig) {
     expect.type('config.methods', methods, 'object');

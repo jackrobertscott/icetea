@@ -22,10 +22,111 @@ Then import the helper classes where needed.
 
 ```js
 import { Store } from 'lumbridge-store';
+```
 
-const store = Store.create({
-  // code...
-});
+## Usage
+
+Create the store and configure it's shape.
+
+```js
+import { Store } from 'lumbridge';
+import * as Yup from 'yup';
+
+const authStore = Store.create()
+  .assign({
+    name: 'token',
+    default: null,
+  })
+  .assign({
+    name: 'userId',
+    default: null,
+    validate: Yup.string(),
+  })
+  .assign({
+    name: 'loggedIn',
+    default: false,
+    validate: Yup.boolean().required(),
+  })
+  .assign({
+    name: 'count',
+    default: 0,
+    validate: Yup.number().required(),
+  })
+  .action({
+    name: 'increment',
+    execute: ({ state, data }) => ({
+      count: state.count += data,
+    }),
+  });
+```
+
+Include the store in regular React code like normal.
+
+```jsx
+import React from 'react';
+import { authStore } from '../stores/authStore';
+
+const HeaderBar = () => (
+  <Menu>
+    <Item onClick={() => authStore.dispatch.increment(1)}>
+      Count
+    </Item>
+  </Menu>
+);
+```
+
+Use stores in combination with routes such as detecting authentication states.
+
+```js
+import { Router } from 'lumbridge';
+import { authStore } from '../stores/authStore';
+
+const authRouter = Router.create()
+  .route({
+    name: 'home',
+    path: '/',
+    exact: true,
+    component: HomePage,
+    enter: {
+      before: () => authStore.state.loggedIn,
+    },
+  });
+```
+
+Forms can even be improved by stores.
+
+```jsx
+import React from 'react';
+import { authStore } from '../stores/authStore';
+import FieldError from '../components/FieldError';
+
+/**
+ * Here is the same form but using React hooks.
+ */
+const LoginFormHooks = ({ onSubmit }) => {
+  const [errors, setErrors] = useState({});
+  const [state, setState] = useState({});
+  useEffect(() => {
+    const unwatch = authStore.watch({
+      state: state => setState(state),
+      errors: errors => setErrors(errors),
+    });
+    return () => unwatch();
+  }, []); // fire only on mount and unmount (empty array)
+  return (
+    <form onSubmit={onSubmit}>
+      <div>
+        <input
+          type="text"
+          name="username"
+          value={state.username}
+          onChange={event => authStore.update({ username: event.target.value })}
+        />
+        {errors.username && <div>{errors.username}</div>}
+      </div>
+    </form>
+  );
+};
 ```
 
 ## API
@@ -38,7 +139,7 @@ Each store is configured with a `config` object.
 
 ```js
 interface IStoreConfig {
-  // todo...
+  // ...
 }
 
 const config: IStoreConfig = {
@@ -72,7 +173,7 @@ Actions are used for more complex state manipulation functions. However, you do 
 
 ```js
 interface IAction {
-  // todo...
+  // ...
 }
 
 const storeAction: IAction {
@@ -86,7 +187,7 @@ const store = Store.create({ schema })
   .action(storeAction);
 ```
 
-Example:
+Example.
 
 ```js
 const store = Store.create({ schema })

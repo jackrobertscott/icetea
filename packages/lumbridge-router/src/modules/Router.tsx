@@ -5,9 +5,11 @@ import history, { ILocation } from '../utils/history';
 import Route from './Route';
 import { Link } from '..';
 
-export interface IEvents {
-  before?: (options: { location: ILocation }) => boolean | void;
-  after?: (options: { location: ILocation }) => void;
+export interface IRouterConfig {
+  routes: IRoute[];
+  nomatch?: INomatch;
+  change?: IEvents;
+  base?: string;
 }
 
 export interface IRoute {
@@ -22,24 +24,22 @@ export interface IRoute {
   leave?: IEvents;
 }
 
-export interface IRoutes {
-  [name: string]: IRoute;
+export interface IEvents {
+  before?: (options: IEventOptions) => boolean | void;
+  after?: (options: IEventOptions) => void;
+}
+
+export interface IEventOptions {
+  location: ILocation;
 }
 
 export interface INomatch {
   redirect: string;
 }
 
-export interface IConfig {
-  routes: IRoutes;
-  nomatch?: INomatch;
-  change?: IEvents;
-  base?: string;
-}
-
 export default class Router {
   public static Link = Link;
-  public static create(config: IConfig): Router {
+  public static create(config: IRouterConfig): Router {
     return new Router(config);
   }
 
@@ -48,15 +48,18 @@ export default class Router {
   protected change?: IEvents;
   protected base?: string;
 
-  constructor({ routes, change, nomatch, base }: IConfig) {
-    expect.type('config.routes', routes, 'object');
-    expect.type('config.change', change, 'object', true);
-    expect.type('config.nomatch', nomatch, 'object', true);
+  constructor({ change, nomatch, base, routes = [] }: IRouterConfig) {
     expect.type('config.base', base, 'string', true);
-    this.routes = this.createRoutes(routes);
-    this.nomatch = nomatch;
-    this.change = change;
+    expect.type('config.nomatch', nomatch, 'object', true);
+    expect.type('config.change', change, 'object', true);
     this.base = base;
+    this.change = change;
+    this.nomatch = nomatch;
+    this.routes = routes.sort(compareRoutePaths);
+  }
+
+  public route(item: IRoute) {
+    this.routes = [...this.routes, item].sort(compareRoutePaths);
   }
 
   public render(): React.FunctionComponent {
@@ -68,14 +71,6 @@ export default class Router {
         nomatch={this.nomatch}
       />
     );
-  }
-
-  private createRoutes(routes: IRoutes): IRoute[] {
-    return Object.keys(routes)
-      .reduce((collection: IRoute[], name): IRoute[] => {
-        return collection.concat([{ name, ...routes[name] }]);
-      }, [])
-      .sort(compareRoutePaths);
   }
 
   private currentRoute = (pathname?: string): IRoute | null => {

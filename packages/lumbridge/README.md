@@ -28,10 +28,6 @@ Import into a your app:
 
 ```js
 import { Store, Persistor, Router } from 'lumbridge';
-
-const authStore = Store.create({
-  // code...
-});
 ```
 
 **Note:** lumbridge components require *no additional setup* to start using in an existing React app.
@@ -42,7 +38,7 @@ Structured and intuitive routing which allows you to easily create routes and ma
 
 [See detailed docs.](https://github.com/jackrobertscott/lumbridge/tree/master/packages/lumbridge-router)
 
-Considerations in design:
+Considerations in design.
 
 - **Avoid complexity** by creating your routes using our simple JavaScript object configuration.
 - **Route enter guards** enable you to prevent a person accessing a route.
@@ -51,7 +47,9 @@ Considerations in design:
 - **Smart route prioritization** makes sure the route which matches closest to the path is the route which is rendered.
 - **Nested routes** are easily created by embedding a router in a child component.
 
-Example:
+---
+
+Configure the router with React components.
 
 ```js
 import { Router } from 'lumbridge';
@@ -63,13 +61,11 @@ export const authRouter = Router.create({
     }
   })
   .route({
-    name: 'home',
     path: '/',
     exact: true,
     component: HomePage,
   })
   .route({
-    name: 'login',
     path: '/login',
     component: LoginForm,
     enter: {
@@ -80,7 +76,6 @@ export const authRouter = Router.create({
     },
   })
   .route({
-    name: 'signUp',
     path: '/sign-up',
     component: SignUpPage,
     enter: {
@@ -89,9 +84,9 @@ export const authRouter = Router.create({
   });
 ```
 
-Usage:
+Compile the router and use in your app.
 
-```js
+```jsx
 import { Router } from 'lumbridge';
 import authRouter from '../routers/authRouter';
 
@@ -115,13 +110,15 @@ Easily interact with persistant data stores such as `localStorage`, GraphQL Serv
 
 [See detailed docs.](https://github.com/jackrobertscott/lumbridge/tree/master/packages/lumbridge-persistor)
 
-Considerations in design:
+Considerations in design.
 
 - **Built to be flexible** so you can interface with any kind of data store.
 - **Seperates concerns** so that data *requests* are made seperately to how that data is *displayed*.
 - **Scopes** allow you to listen to multiple data requests with a the same callbacks - reducing a lot of code overhead.
 
-Example:
+---
+
+Configure a persistor by creating a interface with a data source.
 
 ```js
 import { Persistor } from 'lumbridge';
@@ -144,16 +141,11 @@ const apolloPersistor = Persistor.create()
   });
 ```
 
-Usage:
+Create instances which will preserve and listen to data from the data source.
 
 ```js
-import React from 'react';
 import { apolloPersistor } from '../persistors/apolloPersistor';
 
-/**
- * Create an instance from the persistor, this will contain the common
- * request information - such as a graphQL query.
- */
 export const meQueryInstance = apolloPersistor.instance({
   action: 'query',
   common: () => ({
@@ -164,15 +156,17 @@ export const meQueryInstance = apolloPersistor.instance({
     `,
   }),
 });
+```
 
-/**
- * Here is how you can use the instance in a React component using hooks.
- */
+Then use them in your components.
+
+```jsx
+import React from 'react';
+
 const MyProfile = ({ id }) => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState(null);
-  
   /**
    * By passing everything in via an object, you get the following benefits:
    * 1. Unsubscribe from all functions on unwatch (avoid memory leaks)
@@ -187,18 +181,15 @@ const MyProfile = ({ id }) => {
     });
     return () => unwatch();
   }, []);
-
   /**
    * Executions are seperated from results so that it's
-   * easy to refresh without extra code. This will fire when
-   * the "id" changes.
+   * easy to refresh without extra code.
    */
   useEffect(() => {
     meQueryInstance.execute({
       variables: { id },
     });
   }, [id]);
-
   return (
     <div>
       {data.me.name}
@@ -215,7 +206,7 @@ Share and validate data in multiple places around an app.
 
 [See detailed docs.](https://github.com/jackrobertscott/lumbridge/tree/master/packages/lumbridge-store)
 
-Considerations in design:
+Considerations in design.
 
 - Access data in multiple locations throughout app without passing data through components.
 - Get awesome data validation by using [Yup](https://www.npmjs.com/package/yup) the third party validation library.
@@ -223,38 +214,34 @@ Considerations in design:
 - Updates state using `store.update({})` which is similar to how `this.setState({})` works, only partially updating the store.
 - Reset the store by using `store.reset()` which will set the stores values back to their state.
 
-Example:
+---
+
+Create the store and configure it's shape.
 
 ```js
 import { Store } from 'lumbridge';
 import * as Yup from 'yup';
 
-const schema = {
-  token: {
-    state: null,
-  },
-  userId: {
-    state: null,
+const authStore = Store.create()
+  .assign({
+    name: 'token',
+    default: null,
+  })
+  .assign({
+    name: 'userId',
+    default: null,
     validate: Yup.string(),
-  },
-  loggedIn: {
-    state: false,
+  })
+  .assign({
+    name: 'loggedIn',
+    default: false,
     validate: Yup.boolean().required(),
-  },
-  big: {
-    state: null,
-    validate: Yup.object({
-      one: Yup.string().required(),
-      two: Yup.string().required(),
-    }),
-  },
-  count: {
-    state: 0,
+  })
+  .assign({
+    name: 'count',
+    default: 0,
     validate: Yup.number().required(),
-  },
-};
-
-const authStore = Store.create({ schema })
+  })
   .action({
     name: 'increment',
     execute: ({ state, data }) => ({
@@ -263,9 +250,9 @@ const authStore = Store.create({ schema })
   });
 ```
 
-Usage:
+Include the store in regular React code like normal.
 
-```js
+```jsx
 import React from 'react';
 import { authStore } from '../stores/authStore';
 
@@ -278,7 +265,7 @@ const HeaderBar = () => (
 );
 ```
 
-You can also use stores with routes:
+Use stores in combination with routes such as detecting authentication states.
 
 ```js
 import { Router } from 'lumbridge';
@@ -296,9 +283,9 @@ const authRouter = Router.create()
   });
 ```
 
-You can also handle forms with stores:
+Forms can even be improved by stores.
 
-```js
+```jsx
 import React from 'react';
 import { authStore } from '../stores/authStore';
 import FieldError from '../components/FieldError';

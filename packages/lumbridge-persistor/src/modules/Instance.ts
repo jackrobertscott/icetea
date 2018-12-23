@@ -1,6 +1,6 @@
 import { expect, Watchable } from 'lumbridge-core';
 
-export interface IMethod {
+export interface IAction {
   payload: {
     [prop: string]: any;
   };
@@ -15,7 +15,7 @@ export type IExecute = (...args: any[]) => { [name: string]: any };
 
 export interface IConfig {
   mapped?: IExecute;
-  method: IMethod;
+  method: IAction;
 }
 
 export interface IInstanceWatcher {
@@ -39,7 +39,7 @@ export default class Instance extends Watchable<
   }
 
   private mapped?: IExecute;
-  private method: IMethod;
+  private method: IAction;
   private payloadLast: any;
 
   constructor({ mapped, method }: IConfig) {

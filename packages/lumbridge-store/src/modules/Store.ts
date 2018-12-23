@@ -23,8 +23,8 @@ export interface IActions {
   [name: string]: (...args: any[]) => IState;
 }
 
-export interface IConfig {
-  schema: ISchema;
+export interface IStoreConfig {
+  schema?: ISchema;
   actions?: IActions;
 }
 
@@ -39,7 +39,7 @@ export interface IStoreUpdates {
 }
 
 export default class Store extends Watchable<IStoreWatcher, IStoreUpdates> {
-  public static create(config: IConfig): Store {
+  public static create(config: IStoreConfig): Store {
     return new Store(config);
   }
 
@@ -50,9 +50,9 @@ export default class Store extends Watchable<IStoreWatcher, IStoreUpdates> {
   private currentErrors: IErrors;
   private defaultSchema: ISchema;
 
-  constructor({ schema, actions }: IConfig) {
+  constructor({ schema, actions }: IStoreConfig) {
     super();
-    expect.type('config.schema', schema, 'object');
+    expect.type('config.schema', schema, 'object', true);
     expect.type('config.actions', actions, 'object', true);
     this.schema = schema;
     this.actions = actions || {};
