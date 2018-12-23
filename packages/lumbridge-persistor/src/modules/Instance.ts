@@ -1,53 +1,55 @@
 import { expect, Watchable } from 'lumbridge-core';
 
-export interface IAction {
-  payload: {
-    [prop: string]: any;
-  };
+export interface IInstanceAction {
+  name: string;
   handler: (...args: any[]) => Promise<any> | any;
 }
 
-export interface IStatus {
+export interface IInstanceStatus {
   loading: boolean;
 }
 
-export type IExecute = (...args: any[]) => { [name: string]: any };
+export interface IInstancePayload {
+  [name: string]: any;
+}
 
-export interface IConfig {
-  mapped?: IExecute;
-  method: IAction;
+export type IInstanceCommon = (...args: any[]) => IInstancePayload;
+
+export interface IInstanceConfig {
+  action: IInstanceAction;
+  common?: IInstanceCommon;
 }
 
 export interface IInstanceWatcher {
   data?: (data: any) => void;
   catch?: (error: Error) => void;
-  status?: (status: IStatus) => void;
+  status?: (status: IInstanceStatus) => void;
 }
 
 export interface IInstanceUpdates {
   data?: any;
   catch?: Error;
-  status?: IStatus;
+  status?: IInstanceStatus;
 }
 
 export default class Instance extends Watchable<
   IInstanceWatcher,
   IInstanceUpdates
 > {
-  public static create(config: IConfig): Instance {
+  public static create(config: IInstanceConfig): Instance {
     return new Instance(config);
   }
 
-  private mapped?: IExecute;
-  private method: IAction;
-  private payloadLast: any;
+  private action: IInstanceAction;
+  private common?: IInstanceCommon;
+  private payloadLast?: IInstancePayload;
 
-  constructor({ mapped, method }: IConfig) {
+  constructor({ common, action }: IInstanceConfig) {
     super();
-    expect.type('config.mapped', mapped, 'function');
-    expect.type('config.method', method, 'object');
-    this.mapped = mapped;
-    this.method = method;
+    expect.type('config.action', action, 'object');
+    expect.type('config.common', common, 'function', true);
+    this.action = action;
+    this.common = common;
   }
 
   public watch(watcher: IInstanceWatcher): () => void {
@@ -58,48 +60,34 @@ export default class Instance extends Watchable<
   }
 
   public redo() {
-    this.execute({ ...(this.payloadLast || {}) });
+    this.execute({
+      ...(this.payloadLast || {}),
+    });
   }
 
-  public execute(payload: any = {}): void {
-    const map = this.mapped ? this.mapped({ ...payload }) : { ...payload };
-    const issue = this.generateErrors(map);
-    if (issue) {
-      this.batch({ catch: issue });
-      return;
-    }
-    this.payloadLast = payload;
-    this.batch({ status: { loading: true } });
-    const status = { loading: false };
+  public execute(payload?: IInstancePayload): void {
+    this.payloadLast = payload || {};
+    this.batch({
+      status: { loading: true },
+    });
+    const updatedStatus = { loading: false };
+    const map = this.common ? this.common({ ...payload }) : { ...payload };
+    const response = this.action.handler(map);
+    /**
+     * Leave the other functions outside of try/catch as we only
+     * want errors to be caught if they are cause by a server response
+     * and not a coding error.
+     */
     try {
-      const response = this.method.handler(map);
       if (response instanceof Promise) {
         response
-          .then(data => this.batch({ data, status }))
-          .catch(error => this.batch({ catch: error, status }));
+          .then(data => this.batch({ data, status: updatedStatus }))
+          .catch(error => this.batch({ catch: error, status: updatedStatus }));
       } else {
-        this.batch({ data: response, status });
+        this.batch({ data: response, status: updatedStatus });
       }
     } catch (error) {
-      this.batch({ catch: error, status });
+      this.batch({ catch: error, status: updatedStatus });
     }
-  }
-
-  private generateErrors(payload: any = {}): Error | null {
-    const issues: Error[] = Object.keys(this.method.payload)
-      .map(key => {
-        return expect.validate(
-          this.method.payload[key],
-          payload[key],
-          `The ${key} is not valid.`
-        );
-      })
-      .filter(error => error) as Error[];
-    if (issues.length) {
-      const error: any = new Error('The payload is not valid.');
-      error.errors = issues;
-      return error;
-    }
-    return null;
   }
 }

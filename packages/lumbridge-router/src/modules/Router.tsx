@@ -59,8 +59,9 @@ export default class Router {
     this.routes = routes.sort(compareRoutePaths);
   }
 
-  public route(item: IRouterRoute) {
+  public route(item: IRouterRoute): Router {
     this.routes = [...this.routes, item].sort(compareRoutePaths);
+    return this;
   }
 
   public compile(): React.FunctionComponent {

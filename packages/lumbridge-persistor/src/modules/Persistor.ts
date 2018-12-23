@@ -1,46 +1,49 @@
 import { expect } from 'lumbridge-core';
-import Instance, { IExecute, IAction } from './Instance';
+import Instance, { IInstanceAction } from './Instance';
 
-export interface IActions {
-  [name: string]: IAction;
-}
-
-export interface IConfig {
-  methods: IActions;
+export interface IPersistorConfig {
+  actions: IInstanceAction[];
 }
 
 export interface IPersistorInstanceConfig {
-  name: string;
-  map?: (
-    map: IExecute
+  action: string;
+  common?: (
+    ...args: any[]
   ) => {
     [name: string]: any;
   };
 }
 
 export default class Persistor {
-  public static create(config: IConfig): Persistor {
+  public static create(config: IPersistorConfig): Persistor {
     return new Persistor(config);
   }
 
-  private methods: IActions;
+  private actions: IInstanceAction[];
 
-  constructor({ methods }: IConfig) {
-    expect.type('config.methods', methods, 'object');
-    this.methods = methods;
+  constructor({ actions }: IPersistorConfig) {
+    expect.type('config.actions', actions, 'object');
+    this.actions = actions;
   }
 
-  public instance(config: IPersistorInstanceConfig) {
-    expect.type('instance.config.map', config.map, 'function', true);
-    const method = this.methods[config.name];
-    if (!method) {
-      const options: string = Object.keys(this.methods).join(', ');
-      throw new Error(
-        `The method "${
-          config.name
-        }" does not exist on persistor (options are: [${options}]).`
-      );
+  public action(item: IInstanceAction): Persistor {
+    this.actions.push(item);
+    return this;
+  }
+
+  public instance({ action: name, common }: IPersistorInstanceConfig) {
+    expect.type('action', name, 'string');
+    expect.type('common', common, 'function', true);
+    const action = this.actions.find((item: IInstanceAction) => {
+      return name === item.name;
+    });
+    if (!action) {
+      const options: string = this.actions
+        .map(({ name: actionName }) => actionName)
+        .join(', ');
+      const message = `Action of name "${action}" does not exist on persistor. Options are: [${options}].`;
+      throw new Error(message);
     }
-    return Instance.create({ mapped: config.map, method });
+    return Instance.create({ action, common });
   }
 }
