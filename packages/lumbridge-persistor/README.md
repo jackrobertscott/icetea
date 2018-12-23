@@ -21,7 +21,7 @@ yarn add lumbridge-persistor
 Then import the helper classes where needed.
 
 ```js
-import { Persistor } from 'lumbridge-persistor';
+import { Persistor, Scope } from 'lumbridge-persistor';
 ```
 
 **Note:** the `lumbridge` parent package contains [`lumbridge-router`, `lumbridge-store`, `lumbridge-persistor`].
@@ -111,22 +111,10 @@ const MyProfile = ({ id }) => {
 
 #### `const persistor = Persistor.create()`
 
-Each persistor is configured with a `config` object.
+Create a new persistor to begin making requests.
 
 ```ts
-const config: IPersistorConfig = {
-  // ...
-};
-
-const persistor = Persistor.create(config);
-```
-
-Type definitions.
-
-```ts
-interface IPersistorConfig {
-  // ...
-}
+const persistor = Persistor.create();
 ```
 
 #### `persistor.action()`
@@ -134,29 +122,7 @@ interface IPersistorConfig {
 Make a new persistor which includes this action.
 
 ```ts
-const queryAction: IAction = {
-  name: 'query',
-  handler: ({ query, variables }) => {
-    return apollo.query({ query, variables })
-      .then(({ data }) => data);
-  },
-};
-
-serverPersistor.action(queryAction);
-```
-
-Type definitions.
-
-```ts
-interface IAction {
-  // ...
-}
-```
-
-Chain multiple persistor actions.
-
-```js
-export default Persistor.create()
+const serverPersistor = Persistor.create()
   .action({
     name: 'query',
     handler: ({ query, variables }) => {
@@ -180,28 +146,19 @@ export default Persistor.create()
 Create a persistor method with more specific properties to the method being called.
 
 ```ts
-const instanceConfig: IInstanceConfig = {
-  name: 'query',
-  map: ({ ...args }) => ({
-    ...args,
+const meQueryInstance = serverPersistor.instance({
+  action: 'query',
+  common: () => ({
     query: `
       query($id: String) {
         me(id: $id) { name }
       }
     `,
   })
-};
-
-const meQueryInstance = serverPersistor.instance(instanceConfig);
+});
 ```
 
-Type definitions.
-
-```ts
-interface IInstanceConfig {
-  // ...
-}
-```
+**Note:** the `common` property allows you to specify common data sent along with the request and will usually contain a specific endpoint or query.
 
 ### Instance
 
@@ -222,23 +179,11 @@ meQueryInstance.execute({
 Listen to any updates in the persistor as the persistor instance executes.
 
 ```ts
-const events: IWatchEvents = {
+const unwatch = exampleInstance.watch({
   data: data => setData(data),
   catch: error => setError(error),
   status: ({ loading }) => setLoading(loading),
-};
-
-const unwatch = exampleInstance.watch(events);
-```
-
-Type definitions.
-
-```ts
-interface IWatchEvents {
-  data?: (data: any) => void;
-  catch?: (error: Error) => void;
-  status?: (status: IStatus) => void;
-}
+});
 ```
 
 Here is an example with a React hook.
@@ -273,38 +218,26 @@ However, sometimes knowing which data need to change is not clearly known. For e
 
 For those use cases, we created the `Scope` data structure.
 
+#### `const scope = Scope.create()`
+
+Create a scope to add extra functionality to persistors so that they can listen and react to changes in each other.
+
 ```js
-import { Scope } from 'lumbridge-persistor';
-
-const config: IScopeConfig = {
-  // ...
-};
-
-const scope = Scope.create(config);
+const scope = Scope.create();
 ```
-
-Type definitions.
-
-```ts
-interface IScopeConfig {
-  // ...
-}
-```
-
-Scopes are used to add extra functionality to persistors so that they can listen and react to changes in each other.
 
 #### `scope.absorb()`
 
 This will connect a persistor method to the scope. Connecting a persistor method will enable the scope to listen to the changes in all the connected methods.
 
 ```js
-const persistor = Persistor.create();
-const persistorFirstInstance = persistor.instance({ name: 'exampleQuery' });
-const persistorSecondInstance = persistor.instance({ name: 'otherQuery' });
+const examplePersistor = Persistor.create();
+const firstInstance = examplePersistor.instance({ action: 'exampleQuery' });
+const secondInstance = examplePersistor.instance({ action: 'otherQuery' });
 
 const scope = Scope.create();
-scope.absorb(persistorFirstInstance);
-scope.absorb(persistorSecondInstance, true);
+  .absorb(firstInstance);
+  .absorb(secondInstance);
 ```
 
 #### `scope.watch()`
@@ -312,19 +245,9 @@ scope.absorb(persistorSecondInstance, true);
 This will combine and watch all of the persistor methods. This can be useful when you want to listen to any errors which occur in your methods and respond to them all in the same way (such as by creating a toast message).
 
 ```ts
-const events: IWatchEvents = {
+const unwatch = scope.watch({
   catch: error => console.warn(error),
-};
-
-const unwatch = scope.watch(events);
-```
-
-Type definitions.
-
-```ts
-interface IWatchEvents {
-  // ...
-}
+});
 ```
 
 **Note:** when you start watching a scope, don't forget to call the `unwatch` function when you don't need it any more. If you don't unwatch, then you might cause a memory leak.

@@ -89,10 +89,10 @@ const App = () => (
 
 #### `const router = Router.create()`
 
-Each router is configured with a `config` object.
+Routers can be configured with some general settings.
 
 ```ts
-const config: IRouterConfig = {
+const router = Router.create({
   change: {
     before: () => ensureUserAuthenticated(),
     after: () => recordPageChange(),
@@ -100,20 +100,7 @@ const config: IRouterConfig = {
   nomatch: {
     redirect: '/not-found',
   },
-};
-
-const router = Router.create(config);
-```
-
-Type definitions.
-
-```ts
-export interface IRouterConfig {
-  base?: string;
-  change?: IEvents;
-  nomatch?: INomatch;
-  routes?: IRoute[];
-}
+});
 ```
 
 #### `router.route()`
@@ -121,43 +108,16 @@ export interface IRouterConfig {
 Add a route to the router.
 
 ```ts
-const routeOptions: IRoute = {
-  path: '/settings',
-  component: SettingsComponent,
-};
-
 const router = Router.create()
-  .route(routeOptions);
-```
-
-Type definitions.
-
-```ts
-export interface IRoute {
-  path: string;
-  component: any;
-  name?: string;
-  sensitive?: boolean;
-  strict?: boolean;
-  exact?: boolean;
-  start?: boolean;
-  enter?: IEvents;
-  leave?: IEvents;
-}
-
-export interface IEvents {
-  before?: (options: IEventOptions) => boolean | void;
-  after?: (options: IEventOptions) => void;
-}
-
-export interface IEventOptions {
-  location: ILocation;
-}
+  .route({
+    path: '/settings',
+    component: SettingsComponent,
+  });
 ```
 
 #### `router.compile()`
 
-A React component which is used to display the routes in the DOM.
+Create a React component which is used to display the routes in the app.
 
 ```js
 const Routes = router.compile();
@@ -174,7 +134,7 @@ const App = () => (
 
 #### `Router.Link`
 
-A React component which let's you link to your routes.
+This is a React component which let's you link to your routes.
 
 ```js
 import { Router } from 'lumbridge';
@@ -199,7 +159,7 @@ We made this decision on *purpose* to avoid unnecessary complexity. If you would
 ```js
 const ChildRoutes = Router.create()
   .route({
-    path: '/main/nested',
+    path: '/nested',
     component: NestedComponent,
   })
   .compile();
@@ -212,8 +172,8 @@ const NestedComponent = () => (
 
 const ParentRoutes = Router.create()
   .route({
-    path: '/main',
-    component: NestedComponent,
+    path: '/',
+    component: WrappingComponent,
   })
   .compile();
 

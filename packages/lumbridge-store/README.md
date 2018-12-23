@@ -24,6 +24,8 @@ Then import the helper classes where needed.
 import { Store } from 'lumbridge-store';
 ```
 
+**Note:** the `lumbridge` parent package contains [`lumbridge-router`, `lumbridge-store`, `lumbridge-persistor`].
+
 ## Usage
 
 Create the store and configure it's shape.
@@ -135,114 +137,83 @@ const LoginFormHooks = ({ onSubmit }) => {
 
 #### `const store = Store.create()`
 
-Each store is configured with a `config` object.
+Create a new store to begin storing values.
 
 ```js
-interface IStoreConfig {
-  // ...
-}
+const store = Store.create();
+```
 
-const config: IStoreConfig = {
-  schema: {
-    userId: {
-      state: null,
-      validate: Yup.string(),
-    },
-    loggedIn: {
-      state: false,
-      validate: Yup.boolean().required(),
-    },
-    deepExample: {
-      state: null,
-      validate: Yup.object({
-        one: Yup.string(),
-        two: Yup.string().required(),
-      }),
-    },
-  },
-};
+#### `store.assign()`
 
-const store = Store.create(config);
+Assign a property on the store.
+
+```ts
+store.assign({
+  name: 'fullName',
+  default: null,
+  validate: Yup.string(),
+});
 ```
 
 **Note:** the above example uses the validation library [Yup](https://www.npmjs.com/package/yup) to make thinds easier but you can use any validation function.
-
-#### `store.action()`
-
-Actions are used for more complex state manipulation functions. However, you do not need to use this in order to use the store.
-
-```js
-interface IAction {
-  // ...
-}
-
-const storeAction: IAction {
-  name: 'doSomething',
-  handler: () => {
-    return { updates: 1 };
-  },
-};
-
-const store = Store.create({ schema })
-  .action(storeAction);
-```
-
-Example.
-
-```js
-const store = Store.create({ schema })
-  .action({
-    name: 'loginUser',
-    handler: ({ token, userId }) => ({
-      token,
-      userId,
-      loggedIn: Boolean(token && userId),
-    }),
-  });
-
-/**
- * Then you can execute the action.
- */
-store.dispatch.loginUser({ token, userId });
-```
-
-### Usage
-
-There are a number of methods you can use to update and extract the values of the store.
 
 #### `store.update()`
 
 Make a *partial* update to the values of the store.
 
 ```js
-import { string, boolean } from 'yup';
+const store = Store.create()
+  .assign({
+    name: 'fullName',
+    default: null,
+    validate: Yup.string().nullable(),
+  }),
+  .assign({
+    name: 'isMember',
+    default: false,
+    validate: Yup.boolean().required(),
+  });
 
-const store = Store.create({
-  schema: {
-    fullName: {
-      state: null,
-      validate: string().nullable(),
-    },
-    isMember: {
-      state: false,
-      validate: boolean().required(),
-    },
-  },
-});
-
-store.update({
-  fullName: 'Jack Scott',
-});
+store.update({ fullName: 'Jack Scott' });
 ```
 
 **Note:** when `store.update` is called, a new object is created by combining the old values with the new values passed into the update function. This is similar to how `this.setState()` works in React components.
 
-#### `store.dispatch[actionName]()`
+#### `store.action()`
 
-To improve code reuse and encourage refactoring of your code, actions let you update multiple state values in one go.
+Create optional actions for more complex state manipulations.
 
 ```js
-const store = Store.create({ schema })
+const store = Store.create()
+  .action({
+    name: 'hugeIncrement',
+    handler: ({ state, data }) => {
+      return {
+        count: state.count + (data.amount * 100),
+      };
+    },
+  })
+  .action({
+    name: 'loginUser',
+    handler: ({ data }) => {
+      const { token, userId } = data || {};
+      return {
+        token,
+        userId,
+        loggedIn: Boolean(token && userId),
+      };
+    },
+  });
+
+store.dispatch.loginUser({ token, userId });
+```
+
+#### `store.dispatch[actionName]()`
+
+To use our store actions; we dispatch them.
+
+```js
+const store = Store.create()
   .action({
     name: 'startQuest',
     handler: ({ name, inFalador }) => ({
@@ -280,9 +251,11 @@ const componentWillUnmount = () => unwatch();
 
 This property gives you access to the internal store values.
 
-```js
-const authStore = Store.create(config);
+```ts
+const authStore = Store.create();
+```
 
+```ts
 const mainRouter = Router.create()
   .route({
     path: '/',
@@ -308,7 +281,7 @@ const usersRouter = Router.create()
     path: '/update',
     component: UserUpdateForm,
     leave: {
-      before: () => !userStore.errors.length,
+      before: () => Object.keys(userStore.errors).length === 0,
     },
   });
 ```

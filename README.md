@@ -30,7 +30,7 @@ Import into a your app:
 import { Store, Persistor, Router } from 'lumbridge';
 ```
 
-**Note:** lumbridge components require *no additional setup* to start using in an existing React app.
+**Note:** the `lumbridge` parent package contains [`lumbridge-router`, `lumbridge-store`, `lumbridge-persistor`].
 
 > 🚩 [**Get started now.**](https://github.com/jackrobertscott/lumbridge/tree/master/packages/lumbridge)
 

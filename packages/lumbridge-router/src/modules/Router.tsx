@@ -62,7 +62,7 @@ export default class Router {
     this.routes = [...this.routes, item].sort(compareRoutePaths);
   }
 
-  public render(): React.FunctionComponent {
+  public compile(): React.FunctionComponent {
     return () => (
       <Route
         history={history}
