@@ -1,41 +1,41 @@
 import { expect, Watchable } from 'lumbridge-core';
 
-export interface IState {
+export interface IStoreConfig {
+  schema?: IStoreField[];
+  actions?: IStoreAction[];
+}
+
+export interface IStoreField {
+  name: string;
+  default: any;
+  validate?: any;
+}
+
+export interface IStoreAction {
+  name: string;
+  execute: ({ state, data }: { state: IStoreState; data: any }) => IStoreState;
+}
+
+export interface IStoreDispatch {
+  [name: string]: (data: any) => void;
+}
+
+export interface IStoreState {
   [key: string]: any;
 }
 
-export interface IErrors {
-  [key: string]: Error;
-}
-
-export interface ISchema {
-  [key: string]: {
-    state: any;
-    validate?: any;
-  };
-}
-
-export interface IDispatches {
-  [name: string]: (...args: any[]) => void;
-}
-
-export interface IActions {
-  [name: string]: (...args: any[]) => IState;
-}
-
-export interface IStoreConfig {
-  schema?: ISchema;
-  actions?: IActions;
+export interface IStoreErrors {
+  [key: string]: Error | any;
 }
 
 export interface IStoreWatcher {
-  state?: (state: IState) => void;
-  errors?: (errors: IErrors) => void;
+  state?: (state: IStoreState) => void;
+  errors?: (errors: IStoreErrors) => void;
 }
 
 export interface IStoreUpdates {
-  state?: IState;
-  errors?: IErrors;
+  state?: IStoreState;
+  errors?: IStoreErrors;
 }
 
 export default class Store extends Watchable<IStoreWatcher, IStoreUpdates> {
@@ -43,104 +43,104 @@ export default class Store extends Watchable<IStoreWatcher, IStoreUpdates> {
     return new Store(config);
   }
 
-  public dispatch: IDispatches;
-  private schema: ISchema;
-  private actions: IActions;
-  private currentState: IState;
-  private currentErrors: IErrors;
-  private defaultSchema: ISchema;
+  private schema: IStoreField[];
+  private actions: IStoreAction[];
+  private current: {
+    state: IStoreState;
+    errors: IStoreErrors;
+  };
 
   constructor({ schema, actions }: IStoreConfig) {
     super();
     expect.type('config.schema', schema, 'object', true);
     expect.type('config.actions', actions, 'object', true);
-    this.schema = schema;
-    this.actions = actions || {};
-    this.currentState = {};
-    this.currentErrors = {};
-    this.dispatch = this.createDispatches();
-    this.defaultSchema = this.createDefaults();
-    this.generateState({});
-    this.generateErrors();
+    this.schema = schema || [];
+    this.actions = actions || [];
+    this.current = { state: {}, errors: {} };
   }
 
-  public get state(): IState {
-    return { ...this.currentState };
+  public assign(field: IStoreField): Store {
+    this.schema.push(field);
+    return this;
   }
 
-  public get errors(): IState {
-    return { ...this.currentErrors };
+  public action(action: IStoreAction): Store {
+    this.actions.push(action);
+    return this;
+  }
+
+  public watch({ state, errors, ...args }: IStoreWatcher): () => void {
+    expect.type('watcher.state', state, 'function', true);
+    expect.type('watcher.errors', errors, 'function', true);
+    return super.watch({ state, errors, ...args });
+  }
+
+  public defaults(): IStoreState {
+    return this.schema.reduce(
+      (state, field) => ({
+        ...state,
+        [field.name]: field.default,
+      }),
+      {}
+    );
   }
 
   public reset(): void {
-    this.currentState = {
-      ...this.defaultSchema,
+    const state = this.defaults();
+    this.current = { ...this.current, state };
+    this.batch({ state });
+  }
+
+  public update(changes: IStoreState): void {
+    const state = this.createState(changes);
+    const errors = this.createErrors(state);
+    this.current = { state, errors };
+    this.batch({ state, errors });
+  }
+
+  public get state(): IStoreState {
+    return { ...this.current.state };
+  }
+
+  public get errors(): IStoreState {
+    return { ...this.current.errors };
+  }
+
+  public get dispatch() {
+    return this.actions.reduce(
+      (dispatchables, action) => ({
+        ...dispatchables,
+        [action.name]: (data: any) =>
+          this.update(action.execute({ ...this.current, data })),
+      }),
+      {}
+    );
+  }
+
+  private createState(changes?: IStoreState): IStoreState {
+    return {
+      ...this.defaults(),
+      ...this.current.state,
+      ...(changes || {}),
     };
-    this.update({});
   }
 
-  public watch(watcher: IStoreWatcher): () => void {
-    expect.type('watcher.state', watcher.state, 'function', true);
-    expect.type('watcher.errors', watcher.errors, 'function', true);
-    return super.watch(watcher);
-  }
-
-  public update(changes: IState): void {
-    this.generateState(changes, state => this.batch({ state }));
-    this.generateErrors(errors => this.batch({ errors }));
-  }
-
-  private generateState(changes: IState, cb?: (state: IState) => any): void {
-    this.currentState = {
-      ...this.defaultSchema,
-      ...this.currentState,
-      ...changes,
-    };
-    if (cb) {
-      cb(this.currentState);
-    }
-  }
-
-  private generateErrors(cb?: (errors: IErrors) => any) {
-    this.currentErrors = Object.keys(this.schema).reduce((collection, key) => {
-      const { validate } = this.schema[key];
-      const issue: Error | null = validate
+  private createErrors(state?: IStoreState): IStoreErrors {
+    return this.schema.reduce((errors, field) => {
+      const issue: Error | null = field.validate
         ? expect.validate(
-            validate,
-            this.currentState[key],
-            `The ${key} is not valid.`
+            field.validate,
+            (state || {})[field.name],
+            `The ${field} is not valid.`
           )
         : null;
       if (issue) {
         return {
-          ...collection,
-          [key]: issue,
+          ...errors,
+          [field.name]: issue,
         };
       }
-      return collection;
-    }, {});
-    if (cb) {
-      cb(this.currentErrors);
-    }
-  }
-
-  private createDispatches(): IDispatches {
-    return Object.keys(this.actions).reduce((collection, key) => {
-      const dispatchAction = (...args: any[]) =>
-        this.update(this.actions[key](...args));
-      return {
-        ...collection,
-        [key]: dispatchAction,
-      };
-    }, {});
-  }
-
-  private createDefaults(): ISchema {
-    return Object.keys(this.schema).reduce((collection, key) => {
-      return {
-        ...collection,
-        [key]: this.schema[key].state,
-      };
+      return errors;
     }, {});
   }
 }
