@@ -1,12 +1,12 @@
 import * as React from 'react';
-import { IRoute, IEvents } from './Router';
+import { IRouterRoute, IRouterEvents } from './Router';
 import EventsRoute from './EventsRoute';
 import { ILocation } from '../utils/history';
 
 export interface IRouteProps {
   history: any;
-  retrieveCurrentRoute: (pathname?: string) => IRoute | null;
-  change?: IEvents;
+  retrieveCurrentRoute: (pathname?: string) => IRouterRoute | null;
+  change?: IRouterEvents;
   nomatch?: {
     redirect: string;
   };
@@ -14,8 +14,8 @@ export interface IRouteProps {
 
 export interface IRouteState {
   location: any;
-  currentRoute: IRoute | null;
-  lastRoute: IRoute | null;
+  currentRoute: IRouterRoute | null;
+  lastRoute: IRouterRoute | null;
 }
 
 export default class Route extends React.Component<IRouteProps, IRouteState> {
@@ -96,7 +96,7 @@ export default class Route extends React.Component<IRouteProps, IRouteState> {
     return <React.Fragment />;
   }
 
-  private runBeforeEnterHooks(route: IRoute): boolean {
+  private runBeforeEnterHooks(route: IRouterRoute): boolean {
     const { change } = this.props;
     const { location } = this.state;
     if (change && typeof change.before === 'function') {
@@ -112,7 +112,7 @@ export default class Route extends React.Component<IRouteProps, IRouteState> {
     return true;
   }
 
-  private runAfterEnterHooks(route: IRoute): void {
+  private runAfterEnterHooks(route: IRouterRoute): void {
     const { change } = this.props;
     const { location } = this.state;
     if (route.enter && typeof route.enter.after === 'function') {
@@ -123,7 +123,7 @@ export default class Route extends React.Component<IRouteProps, IRouteState> {
     }
   }
 
-  private runBeforeLeaveHooks(route: IRoute): boolean {
+  private runBeforeLeaveHooks(route: IRouterRoute): boolean {
     const { location } = this.state;
     if (route.leave && typeof route.leave.before === 'function') {
       if (route.leave.before({ location }) === false) {
@@ -133,7 +133,7 @@ export default class Route extends React.Component<IRouteProps, IRouteState> {
     return true;
   }
 
-  private runAfterLeaveHooks(route: IRoute): void {
+  private runAfterLeaveHooks(route: IRouterRoute): void {
     const { location } = this.state;
     if (route.leave && typeof route.leave.after === 'function') {
       route.leave.after({ location });

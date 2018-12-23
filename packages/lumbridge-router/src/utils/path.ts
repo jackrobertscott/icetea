@@ -1,5 +1,5 @@
 import * as pathToRegexp from 'path-to-regexp';
-import { IRoute } from '../modules/Router';
+import { IRouterRoute } from '../modules/Router';
 
 interface IDigestOptions {
   sensitive?: boolean;
@@ -40,7 +40,7 @@ export const matchPath = ({
   return regexp.exec(currentPath) !== null;
 };
 
-export const compareRoutePaths = (a: IRoute, b: IRoute): number => {
+export const compareRoutePaths = (a: IRouterRoute, b: IRouterRoute): number => {
   if (a.exact && !b.exact) {
     return -1;
   }

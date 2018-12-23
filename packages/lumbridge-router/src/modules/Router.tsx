@@ -6,13 +6,13 @@ import Route from './Route';
 import { Link } from '..';
 
 export interface IRouterConfig {
-  routes: IRoute[];
-  nomatch?: INomatch;
-  change?: IEvents;
+  routes: IRouterRoute[];
+  nomatch?: IRouterNomatch;
+  change?: IRouterEvents;
   base?: string;
 }
 
-export interface IRoute {
+export interface IRouterRoute {
   path: string;
   component: any;
   name?: string;
@@ -20,20 +20,20 @@ export interface IRoute {
   strict?: boolean;
   exact?: boolean;
   start?: boolean;
-  enter?: IEvents;
-  leave?: IEvents;
+  enter?: IRouterEvents;
+  leave?: IRouterEvents;
 }
 
-export interface IEvents {
-  before?: (options: IEventOptions) => boolean | void;
-  after?: (options: IEventOptions) => void;
+export interface IRouterEvents {
+  before?: (options: IRouterEventsOptions) => boolean | void;
+  after?: (options: IRouterEventsOptions) => void;
 }
 
-export interface IEventOptions {
+export interface IRouterEventsOptions {
   location: ILocation;
 }
 
-export interface INomatch {
+export interface IRouterNomatch {
   redirect: string;
 }
 
@@ -43,22 +43,23 @@ export default class Router {
     return new Router(config);
   }
 
-  protected routes: IRoute[];
-  protected nomatch?: INomatch;
-  protected change?: IEvents;
+  protected routes: IRouterRoute[];
+  protected nomatch?: IRouterNomatch;
+  protected change?: IRouterEvents;
   protected base?: string;
 
-  constructor({ change, nomatch, base, routes = [] }: IRouterConfig) {
+  constructor({ base, nomatch, change, routes = [] }: IRouterConfig) {
     expect.type('config.base', base, 'string', true);
     expect.type('config.nomatch', nomatch, 'object', true);
     expect.type('config.change', change, 'object', true);
+    expect.type('config.routes', routes, 'object', true);
     this.base = base;
     this.change = change;
     this.nomatch = nomatch;
     this.routes = routes.sort(compareRoutePaths);
   }
 
-  public route(item: IRoute) {
+  public route(item: IRouterRoute) {
     this.routes = [...this.routes, item].sort(compareRoutePaths);
   }
 
@@ -73,20 +74,20 @@ export default class Router {
     );
   }
 
-  private currentRoute = (pathname?: string): IRoute | null => {
-    return (
-      (this.routes as any[]).filter((route: IRoute) => {
-        return matchPath({
-          currentPath: pathname || history.location.pathname,
-          routePath: `${this.base || ''}${route.path}`,
-          options: {
-            sensitive: route.sensitive || false,
-            strict: route.sensitive || false,
-            end: route.exact || false,
-            start: route.start || true,
-          },
-        });
-      })[0] || null
-    );
+  private currentRoute = (pathname?: string): IRouterRoute | null => {
+    const [match] = this.routes.filter((route: IRouterRoute) => {
+      const options = {
+        sensitive: route.sensitive || false,
+        strict: route.sensitive || false,
+        end: route.exact || false,
+        start: route.start || true,
+      };
+      return matchPath({
+        currentPath: pathname || history.location.pathname,
+        routePath: `${this.base || ''}${route.path}`,
+        options,
+      });
+    });
+    return match || null;
   };
 }
