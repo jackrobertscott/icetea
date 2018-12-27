@@ -57,15 +57,12 @@ Create instances which will preserve and listen to data from the data source.
 import React from 'react';
 import { apolloPersistor } from '../persistors/apolloPersistor';
 
-export const meQueryInstance = apolloPersistor.instance({
-  action: 'query',
-  common: () => ({
-    query: `
-      query($id: String) {
-        me(id: $id) { name }
-      }
-    `,
-  }),
+export const meQueryInstance = apolloPersistor.on.query({
+  query: `
+    query($id: String) {
+      me(id: $id) { name }
+    }
+  `,
 });
 
 const MyProfile = ({ id }) => {
@@ -141,20 +138,17 @@ const serverPersistor = Persistor.create()
 
 **Note:** your `handler` function may return a normal value or a promise e.g. `new Promise((resolve, reject) => resolve(data))`.
 
-#### `const instance = persistor.instance()`
+#### `const instance = persistor.on[actionName]()`
 
 Create a persistor method with more specific properties to the method being called.
 
 ```ts
-const meQueryInstance = serverPersistor.instance({
-  action: 'query',
-  common: () => ({
-    query: `
-      query($id: String) {
-        me(id: $id) { name }
-      }
-    `,
-  })
+const meQueryInstance = serverPersistor.on.query({
+  query: `
+    query($id: String) {
+      me(id: $id) { name }
+    }
+  `,
 });
 ```
 
@@ -232,8 +226,8 @@ This will connect a persistor method to the scope. Connecting a persistor method
 
 ```js
 const examplePersistor = Persistor.create();
-const firstInstance = examplePersistor.instance({ action: 'exampleQuery' });
-const secondInstance = examplePersistor.instance({ action: 'otherQuery' });
+const firstInstance = examplePersistor.on.exampleQuery();
+const secondInstance = examplePersistor.on.otherQuery();
 
 const scope = Scope.create();
   .absorb(firstInstance);

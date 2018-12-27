@@ -13,7 +13,7 @@ export interface IInstancePayload {
   [name: string]: any;
 }
 
-export type IInstanceCommon = (...args: any[]) => IInstancePayload;
+export type IInstanceCommon = IInstancePayload;
 
 export interface IInstanceConfig {
   action: IInstanceAction;
@@ -71,7 +71,7 @@ export default class Instance extends Watchable<
       status: { loading: true },
     });
     const updatedStatus = { loading: false };
-    const map = this.common ? this.common({ ...payload }) : { ...payload };
+    const map = { ...(this.common || {}), ...payload };
     const response = this.action.handler(map);
     /**
      * Leave the other functions outside of try/catch as we only

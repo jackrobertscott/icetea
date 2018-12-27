@@ -1,5 +1,5 @@
 import { expect } from 'lumbridge-core';
-import Instance, { IInstanceAction } from './Instance';
+import Instance, { IInstanceAction, IInstanceCommon } from './Instance';
 
 export interface IPersistorConfig {
   actions: IInstanceAction[];
@@ -7,11 +7,7 @@ export interface IPersistorConfig {
 
 export interface IPersistorInstanceConfig {
   action: string;
-  common?: (
-    ...args: any[]
-  ) => {
-    [name: string]: any;
-  };
+  common?: IInstanceCommon;
 }
 
 export default class Persistor {
@@ -31,6 +27,9 @@ export default class Persistor {
     return this;
   }
 
+  /**
+   * @deprecated use persistor.on instead.
+   */
   public instance({ action: name, common }: IPersistorInstanceConfig) {
     expect.type('action', name, 'string');
     expect.type('common', common, 'function', true);
@@ -45,5 +44,15 @@ export default class Persistor {
       throw new Error(message);
     }
     return Instance.create({ action, common });
+  }
+
+  public get on() {
+    return this.actions.reduce(
+      (actionables, action) => ({
+        ...actionables,
+        [action.name]: (common: any) => Instance.create({ action, common }),
+      }),
+      {}
+    );
   }
 }

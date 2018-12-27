@@ -1,6 +1,6 @@
 describe('const persistor = Persistor.create()', () => {
   it.skip('should create a instance of Persistor');
-  describe('const instance = persistor.instance()', () => {
+  describe('const instance = persistor.on[actionName]()', () => {
     it.skip('should create an instance of the Instance class');
   });
   describe('instance.watch()', () => {

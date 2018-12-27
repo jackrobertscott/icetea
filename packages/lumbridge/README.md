@@ -143,25 +143,17 @@ const apolloPersistor = Persistor.create()
 
 Create instances which will preserve and listen to data from the data source.
 
-```js
-import { apolloPersistor } from '../persistors/apolloPersistor';
-
-export const meQueryInstance = apolloPersistor.instance({
-  action: 'query',
-  common: () => ({
-    query: `
-      query($id: String) {
-        me(id: $id) { name }
-      }
-    `,
-  }),
-});
-```
-
-Then use them in your components.
-
 ```jsx
 import React from 'react';
+import { apolloPersistor } from '../persistors/apolloPersistor';
+
+export const meQueryInstance = apolloPersistor.on.query({
+  query: `
+    query($id: String) {
+      me(id: $id) { name }
+    }
+  `,
+});
 
 const MyProfile = ({ id }) => {
   const [error, setError] = useState(null);
