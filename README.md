@@ -34,6 +34,10 @@ import { Store, Persistor, Router } from 'lumbridge';
 
 > 🚩 [**Get started now.**](https://github.com/jackrobertscott/lumbridge/tree/master/packages/lumbridge)
 
+## Examples
+
+[Forge](https://github.com/jackrobertscott/forge) uses lumbridge to manage it's application state and routing.
+
 ## Packages
 
 - [lumbridge](https://github.com/jackrobertscott/lumbridge/tree/master/packages/lumbridge)
