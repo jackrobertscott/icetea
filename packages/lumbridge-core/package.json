@@ -23,11 +23,13 @@
     "compile": "tsc"
   },
   "devDependencies": {
-    "@types/chai": "^4.1.7",
+    "@types/code": "^4.0.5",
     "@types/mocha": "^5.2.5",
-    "chai": "^4.2.0",
+    "@types/sinon": "^7.0.2",
+    "code": "^5.2.4",
     "mocha": "^5.2.0",
     "nodemon": "^1.18.6",
+    "sinon": "^7.2.2",
     "ts-node": "^7.0.1"
   }
 }

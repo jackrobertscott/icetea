@@ -1,5 +1,5 @@
 export interface IWatcher {
-  [name: string]: any; // ((...args: any[]) => any) | undefined
+  [name: string]: (value: any) => any;
 }
 
 export interface IUpdates {

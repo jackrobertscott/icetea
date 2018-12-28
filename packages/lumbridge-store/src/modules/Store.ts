@@ -39,7 +39,7 @@ export interface IStoreUpdates {
 }
 
 export default class Store extends Watchable<IStoreWatcher, IStoreUpdates> {
-  public static create(config: IStoreConfig): Store {
+  public static create(config: IStoreConfig = {}): Store {
     return new Store(config);
   }
 
@@ -50,7 +50,7 @@ export default class Store extends Watchable<IStoreWatcher, IStoreUpdates> {
     errors: IStoreErrors;
   };
 
-  constructor({ schema, actions }: IStoreConfig) {
+  constructor({ schema, actions }: IStoreConfig = {}) {
     super();
     expect.type('config.schema', schema, 'object', true);
     expect.type('config.actions', actions, 'object', true);

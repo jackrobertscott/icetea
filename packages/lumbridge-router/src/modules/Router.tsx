@@ -3,10 +3,10 @@ import { expect } from 'lumbridge-core';
 import { matchPath, compareRoutePaths } from '../utils/path';
 import history, { ILocation } from '../utils/history';
 import Route from './Route';
-import { Link } from '..';
+import Link from './Link';
 
 export interface IRouterConfig {
-  routes: IRouterRoute[];
+  routes?: IRouterRoute[];
   nomatch?: IRouterNomatch;
   change?: IRouterEvents;
   base?: string;
@@ -39,8 +39,11 @@ export interface IRouterNomatch {
 
 export default class Router {
   public static Link = Link;
-  public static create(config: IRouterConfig): Router {
+  public static create(config: IRouterConfig = {}): Router {
     return new Router(config);
+  }
+  public static navigate(path: string, state?: any) {
+    history.push(path, state);
   }
 
   protected routes: IRouterRoute[];
@@ -48,7 +51,7 @@ export default class Router {
   protected change?: IRouterEvents;
   protected base?: string;
 
-  constructor({ base, nomatch, change, routes = [] }: IRouterConfig) {
+  constructor({ base, nomatch, change, routes }: IRouterConfig = {}) {
     expect.type('config.base', base, 'string', true);
     expect.type('config.nomatch', nomatch, 'object', true);
     expect.type('config.change', change, 'object', true);
@@ -56,7 +59,7 @@ export default class Router {
     this.base = base;
     this.change = change;
     this.nomatch = nomatch;
-    this.routes = routes.sort(compareRoutePaths);
+    this.routes = (routes || []).sort(compareRoutePaths);
   }
 
   public route(item: IRouterRoute): Router {

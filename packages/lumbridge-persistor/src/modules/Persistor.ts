@@ -2,7 +2,7 @@ import { expect } from 'lumbridge-core';
 import Instance, { IInstanceAction, IInstanceCommon } from './Instance';
 
 export interface IPersistorConfig {
-  actions: IInstanceAction[];
+  actions?: IInstanceAction[];
 }
 
 export interface IPersistorInstanceConfig {
@@ -11,15 +11,15 @@ export interface IPersistorInstanceConfig {
 }
 
 export default class Persistor {
-  public static create(config: IPersistorConfig): Persistor {
+  public static create(config: IPersistorConfig = {}): Persistor {
     return new Persistor(config);
   }
 
   private actions: IInstanceAction[];
 
-  constructor({ actions }: IPersistorConfig) {
-    expect.type('config.actions', actions, 'object');
-    this.actions = actions;
+  constructor({ actions }: IPersistorConfig = {}) {
+    expect.type('config.actions', actions, 'object', true);
+    this.actions = actions || [];
   }
 
   public action(item: IInstanceAction): Persistor {
