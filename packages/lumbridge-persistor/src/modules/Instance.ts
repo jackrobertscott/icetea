@@ -47,7 +47,7 @@ export default class Instance extends Watchable<
   constructor({ common, action }: IInstanceConfig) {
     super();
     expect.type('config.action', action, 'object');
-    expect.type('config.common', common, 'function', true);
+    expect.type('config.common', common, 'object', true);
     this.action = action;
     this.common = common;
   }

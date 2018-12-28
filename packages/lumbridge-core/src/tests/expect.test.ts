@@ -8,13 +8,13 @@ describe('expect.type()', () => {
       utils.expect.type('data.check', data.check, 'string');
     expect(validate).to.throw();
   });
-  it('should throw an error when value is not provided and not optional.', () => {
+  it('should throw an error when value is required but not provided', () => {
     const data = {} as any;
     const validate = () =>
       utils.expect.type('data.check', data.check, 'string');
     expect(validate).to.throw();
   });
-  it('should not throw an error when value is not provided and optional.', () => {
+  it('should not throw an error when value is not required and not provided', () => {
     const data = {} as any;
     const validate = () =>
       utils.expect.type('data.check', data.check, 'string', true);

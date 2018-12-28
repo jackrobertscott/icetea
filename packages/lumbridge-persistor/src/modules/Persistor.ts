@@ -46,7 +46,7 @@ export default class Persistor {
     return Instance.create({ action, common });
   }
 
-  public get on() {
+  public get on(): { [name: string]: (common: any) => Instance } {
     return this.actions.reduce(
       (actionables, action) => ({
         ...actionables,

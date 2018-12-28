@@ -28,6 +28,11 @@ export interface IStoreErrors {
   [key: string]: Error | any;
 }
 
+export interface IStoreCurrent {
+  state: IStoreState;
+  errors: IStoreErrors;
+}
+
 export interface IStoreWatcher {
   state?: (state: IStoreState) => void;
   errors?: (errors: IStoreErrors) => void;
@@ -45,10 +50,7 @@ export default class Store extends Watchable<IStoreWatcher, IStoreUpdates> {
 
   private schema: IStoreField[];
   private actions: IStoreAction[];
-  private current: {
-    state: IStoreState;
-    errors: IStoreErrors;
-  };
+  private current: IStoreCurrent;
 
   constructor({ schema, actions }: IStoreConfig = {}) {
     super();
@@ -61,6 +63,7 @@ export default class Store extends Watchable<IStoreWatcher, IStoreUpdates> {
 
   public assign(field: IStoreField): Store {
     this.schema.push(field);
+    this.createCurrent();
     return this;
   }
 
@@ -86,16 +89,12 @@ export default class Store extends Watchable<IStoreWatcher, IStoreUpdates> {
   }
 
   public reset(): void {
-    const state = this.defaults();
-    this.current = { ...this.current, state };
-    this.batch({ state });
+    const changes = this.defaults();
+    this.batch(this.createCurrent(changes));
   }
 
   public update(changes: IStoreState): void {
-    const state = this.createState(changes);
-    const errors = this.createErrors(state);
-    this.current = { state, errors };
-    this.batch({ state, errors });
+    this.batch(this.createCurrent(changes));
   }
 
   public get state(): IStoreState {
@@ -106,7 +105,7 @@ export default class Store extends Watchable<IStoreWatcher, IStoreUpdates> {
     return { ...this.current.errors };
   }
 
-  public get dispatch() {
+  public get dispatch(): { [name: string]: (data: any) => void } {
     return this.actions.reduce(
       (dispatchables, action) => ({
         ...dispatchables,
@@ -115,6 +114,14 @@ export default class Store extends Watchable<IStoreWatcher, IStoreUpdates> {
       }),
       {}
     );
+  }
+
+  private createCurrent(changes?: IStoreState): IStoreCurrent {
+    const state = this.createState(changes);
+    const errors = this.createErrors(state);
+    const update = { state, errors };
+    this.current = update;
+    return update;
   }
 
   private createState(changes?: IStoreState): IStoreState {
