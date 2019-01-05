@@ -10,8 +10,6 @@
 - [`Persistor`](https://github.com/jackrobertscott/lumbridge/tree/master/packages/lumbridge-persistor): Interact with data storage clients with ease.
 - [`Store`](https://github.com/jackrobertscott/lumbridge/tree/master/packages/lumbridge-store): Quick to setup, modular local state management.
 
-> 🚩 [**See some examples.**](https://github.com/jackrobertscott/lumbridge/tree/master/packages/lumbridge)
-
 ## Usage
 
 Using [npm](https://www.npmjs.com/package/lumbridge):
@@ -34,7 +32,7 @@ import { Store, Persistor, Router } from 'lumbridge';
 
 **Note:** the `lumbridge` parent package contains [`lumbridge-router`, `lumbridge-store`, `lumbridge-persistor`].
 
-> 🚩 [**Get started now.**](https://github.com/jackrobertscott/lumbridge/tree/master/packages/lumbridge)
+> 🚩 [**See some examples.**](https://github.com/jackrobertscott/lumbridge/tree/master/packages/lumbridge)
 
 ## Examples
 
